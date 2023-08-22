@@ -1,0 +1,25 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "scripts": {
+    "build": "yarn add link:./../app-ext; nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@turf/turf": "^6.5.0",
+    "app-ext": "link:./../app-ext",
+    "chart.js": "^4.3.0",
+    "ol": "^7.4.0",
+    "splitpanes": "^3.1.5",
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@types/node": "^18",
+    "nuxt": "^3.6.5",
+    "sass": "^1.60.0"
+  }
+}

@@ -1,0 +1,32 @@
+html, body {
+    overscroll-behavior: none;
+}
+
+.text-muted{
+    color: #333;
+    font-size: 0.666rem;
+}
+
+.v-table{
+    & tr {
+        & > td {
+            &.v-data-table-column--fixed{
+                background-color: #fff !important;
+                z-index: 1;
+            }
+            & .v-chip{
+                --v-chip-size: 0.65rem;
+                --v-chip-height: 0;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.65rem;
+                border-radius: 4px;
+                line-height: 1.115;
+            }
+        }
+        &.ar-bad{
+            & > td {
+                background-color: #FFFDE7 !important; /* yellow-lighten-5*/
+            }
+        }
+    }
+}
