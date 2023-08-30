@@ -131,7 +131,7 @@
             <v-list-item title="ИТОГО расход"
                          class="text-h6">
                 <template v-slot:append>
-                    {{ format(totals.totalExp) }}
+                    {{ format(totals.totalExp, 2) }}
                     <v-chip v-if="totals.pc('totalExp')!==null"
                             class="ml-3"
                             size="small"
@@ -143,9 +143,9 @@
             <v-list-item title="Вал прибыль"
                          class="text-h6">
                 <template v-slot:append>
-                    {{ format(totals.totalProfit) }}
+                    {{ format(totals.totalProfit, 2) }}
                     <v-chip v-if="totals.pc('totalProfit')!==null"
-                            class="ml-3"
+                            class="ml-3 px-3"
                             size="small"
                             :text="format(totals.pc('totalProfit')) + '%'"
                             :color="totals.pc('totalProfit') > 0 ? 'primary' : 'red-accent-4'">
@@ -157,11 +157,15 @@
                     <v-chip class="mr-2"
                             size="small"
                             elevation="2"
+                            rounded="rounded"
                             prepend-icon="mdi-truck-outline">
                         {{ totals.vehicles.num }}
                     </v-chip>
                 </template>
                 <div class="ar-stats">
+                    <div>
+                        тоннаж:&nbsp;{{ format(totals.vehicles.tonnage, 0) }}&nbsp;т.
+                    </div>
                     <div>
                         пробег:&nbsp;{{ format(totals.vehicles.distance,0) }}&nbsp;(ср.:{{ format(totals.vehicles.avg_distance, 0) }})&nbsp;км.
                     </div>
@@ -177,13 +181,28 @@
         <div class="ar-company__chart">
             <canvas id="chart"></canvas>
         </div>
+        <v-list class="ar-expences"
+                    v-if="expences.length > 0"
+                    density="compact">
+            <v-list-subheader>Детализация затрат по статьям</v-list-subheader>
+            <v-list-item v-for="e in expences"
+                         :key="'exp-' + e.id">
+                {{ e.name }}
+                <template v-slot:append>
+                    {{ format(e.cost) }}
+                </template>
+            </v-list-item>
+        </v-list>
+        <v-progress-linear v-else
+            indeterminate>
+        </v-progress-linear>
     </div>
 </template>
 <script>
 import Chart from 'chart.js/auto';    
 import { computed, onUnmounted } from "vue";
 import { all } from "~/composables/data";
-import { gettotals } from "~/services/company";
+import { gettotals, getexpences } from "~/services/company";
 import ArBaseReport from "./ArBaseReport";
 
 let chart = null;
@@ -349,6 +368,8 @@ export default {
             at: 0
         });
         
+        const expences = ref([]);
+        
         
         const _buildChart = ()=>{
             const conte = $(".ar-company__chart");
@@ -419,10 +440,33 @@ export default {
                 chart.destroy();
                 chart = null;
             }
+            expences.value = [];
             try {
                 const res = await gettotals(all.period.start, all.period.end);
                 Object.keys(res).forEach(k => totals.value[k] = res[k]);
                 totals.value.at = (new Date()).getTime();
+                getexpences(all.period.start, all.period.end).then( res => {
+                    var all = 0, res = res;
+                    res.push({
+                        id: 777777,
+                        name: 'Зарплата',
+                        cost: totals.value.expenses_driver
+                    });
+                    res.push({
+                        id: 888888,
+                        name: 'Налог',
+                        cost: totals.value.expenses_driver_vat
+                    });
+                    res = res.sort( (e1, e2) => {
+                        return (e1.cost > e2.cost) ? -1 : (e1.cost < e2.cost) ? 1 : 0;
+                    });
+                    res.forEach( r => all += r.cost);
+                    res.push({id: 999999, name: 'ИТОГО', cost: all});
+                    
+                    expences.value = res;
+                }).catch(e => {
+                    console.log('ERR (getexpences)', e);
+                });
                 let d2 = $moment(all.period.start).add(-1, 'months'),
                     d3 = $moment(all.period.end).add(-1, 'months');
                 gettotals(d2.toDate(), d3.toDate()).then( prev => {
@@ -447,7 +491,8 @@ export default {
         return {
             pending,
             error,
-            totals
+            totals,
+            expences
         };
     },
     methods: {
@@ -498,6 +543,9 @@ export default {
                 width: 100%;
                 margin: 0 auto;
             }
+        }
+        & .ar-expences{
+            margin-top: 2rem;
         }
     }
 </style>

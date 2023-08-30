@@ -42,7 +42,11 @@
             {{ format(item.raw.gross_tonne, 0) }}
         </template>    
         <template v-slot:item.expenses="{ item }">
-            {{ format(item.raw.expenses, 0) }}
+            <v-btn variant="text" 
+                   size="small"
+                   v-on:click="dodetails(item.raw)">
+                {{ format(item.raw.expenses, 0) }}
+            </v-btn>
         </template>    
         <template v-slot:item.profit="{ item }">
             <v-chip v-if="item.raw.profit < 0" color="red-accent-4">
@@ -59,10 +63,12 @@
     <div class="ar-vehicles__chart">
         <canvas id="chart"></canvas>
     </div>
+    <ar-vehicle-expences ref="details" />
 </template>
 <script>
 import Chart from 'chart.js/auto';    
 import ArBaseReport from "./ArBaseReport";
+import ArVehicleExpences from "./ArVehicleExpences";
 import { all } from "~/composables/data";
 import { getbyvehicles } from "~/services/company";
 import { colorize } from "./ArBaseReport";
@@ -293,8 +299,15 @@ export default {
             error,
             items
         };
+    },
+    components: {
+        ArVehicleExpences
+    },
+    methods: {
+        dodetails(vehicle){
+            this.$refs["details"].open(vehicle);
+        }
     }
-    
 };
 </script>
 <style lang="scss">
@@ -312,6 +325,11 @@ export default {
                     &:first-child{
                         text-align: left;
                         font-weight: 600;
+                    }
+                    & .v-btn {
+                        &__content{
+                            border-bottom: 1px solid navy;
+                        }
                     }
                 }
             }

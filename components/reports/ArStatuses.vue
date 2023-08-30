@@ -21,21 +21,18 @@
                   no-data-text="..."
                   return-object>
         <template v-slot:item.reg_number="{ item }">
-            {{ item.raw.reg_number }}
-            <div class="text-muted">{{ item.raw.trailer }}</div>
-        </template>
-        <template v-slot:item.status="{ item }">
             <div class="d-flex align-center">
                 <v-chip class="ar-status" 
                         elevation="1"
                         pill
                         variant="tonal"
                         :color="item.raw.color">
-                    <v-icon>
-                        {{ item.raw.ico }}
-                    </v-icon>
+                    <v-icon>{{ item.raw.ico }}</v-icon>
                 </v-chip>
-                {{ item.raw.status }}
+                <div>
+                    {{ item.raw.reg_number }}
+                    <div class="text-muted">{{ item.raw.trailer }}</div>
+                </div>
             </div>
         </template>
         <template v-slot:item.at="{ item }">
@@ -46,6 +43,14 @@
                 {{ dtformat(item.raw.at) }}
             </template>
         </template>
+        <template v-slot:item.activity="{ item }">
+            <template v-if="!(item.raw.actidays > 1)">
+                {{ dtformat(item.raw.activity) }}
+            </template>
+            <v-chip v-else color="red-accent-4">
+                {{ item.raw.activity ? dtformat(item.raw.activity) + ' (' + item.raw.actidays + ' дн)': 'н/д' }}
+            </v-chip>
+        </template>
     </v-data-table>
 </template>
 <script>
@@ -55,15 +60,16 @@ import ArBaseReport from "./ArBaseReport";
 import { colorize } from "./ArBaseReport";
 
 const _HDRS = [
-    {title: 'ТС',         key: 'reg_number', type: 'string', sortable: true, fixed: true, width: 52},
-    {title: 'статус',     key: 'status',     type: 'string', sortable: true, fixed: true, width: 96},
-    {title: 'контрагент', key: 'contractor', type: 'string', sortable: true, width: 200},
-    {title: 'водитель',   key: 'drivers',    type: 'string', sortable: true, width: 100},
-    {title: 'изм.',       key: 'at',         type: 'date',   sortable: true, width: 120},
-    {title: 'время.',     key: 'timeWork',   type: 'string', sortable: false, width: 120},
-    {title: 'макс.нагрузка',key: 'maxCapacity',type: 'float',sortable: false, width: 76},
-    {title: 'загружено',  key: 'loaded',     type: 'float', sortable:  false, width: 76},
-    {title: 'окл.',       key: 'diffWeight', type: 'float', sortable:  false, width: 76}
+    {title: 'ТС',           key: 'reg_number', sortable: true,  fixed: true, width: 96},
+    {title: 'статус',       key: 'status',     sortable: true,  fixed: true, width: 52},
+    {title: 'контрагент',   key: 'contractor', sortable: true,  width: 200},
+    {title: 'водитель',     key: 'drivers',    sortable: true,  width: 100},
+    {title: 'изм.',         key: 'at',         sortable: true,  width: 120},
+    {title: 'время',        key: 'timeWork',   sortable: false, width: 120},
+    {title: 'макс.нагрузка',key: 'maxCapacity',sortable: false, width: 76},
+    {title: 'загружено',    key: 'loaded',     sortable: false, width: 76},
+    {title: 'окл.',         key: 'diffWeight', sortable: false, width: 76},
+    {title: 'активность',   key: 'activity',   sortable: true,  width: 76}
 ];
 
 export default {
@@ -71,25 +77,34 @@ export default {
     extends: ArBaseReport,
     async setup(props, { emit }){
         const now = new Date();
-        const {data: items, pending, error} = useLazyAsyncData('company', async ()=>{
+        const s_now = $moment().format("DD.MM.YYYY");
+        const {data: items, pending, error} = useAsyncData('company', async ()=>{
             try {
                 const res = await getstatuses(all.period.start, all.period.end);
                 emit('count', res.length);
                 res.forEach( r => {
-                    const status = r.last_status?.map( s => {
+                    const status = r.active_status;
+/*                    
+                    r.last_status?.map( s => {
                         s.created = $moment(s.created_at, 'YYYY-MM-DD');
                         return s;
                     }).sort( (s1, s2) => {
                         return s1.created.isBefore(s2) ? -1 : s1.created.isAfter(s2) ? 1 : 0
                     }).at(0); 
+* 
+*/
                     const order = status?.pivot?.vehicle_order;
                     
                             //r.active_status;
                     r.expired = false;
-                    r.drivers = r.drivers?.filter( d => {
-                        let end = !!d.pivot.end_date ? $moment(d.pivot.end_date, 'YYYY-MM-DD HH:mm:ss') : null;
-                        return !end || end.isSameOrAfter(now);
-                    })?.map( d => d.user.full_name )?.join(', ');
+                    if ( order?.driver ){
+                        r.drivers = order.driver.user.full_name;
+                    } else {
+                        r.drivers = r.drivers?.filter( d => {
+                            let end = !!d.pivot.end_date ? $moment(d.pivot.end_date, 'YYYY-MM-DD HH:mm:ss') : null;
+                            return !end || end.isSameOrAfter(now);
+                        })?.map( d => d.user.full_name )?.join(', ');
+                    }
                     r.status = status?.title || '';
                     if ( /^(загру)+.*(назна)+/i.test(r.status) ){
                         r.ico = "mdi-clock-alert-outline";
@@ -159,6 +174,13 @@ export default {
                             r.loaded = 'вес не указан';
                         }
                     }
+                    
+                    if ( r.activity ){
+                        r.activity = $moment(r.activity, 'YYYY-MM-DD HH:mm:ss').toDate();
+                        r.actidays = $moment().diff(r.activity, 'days');
+                    } else {
+                        r.actidays = 999;
+                    }
                 });
                 colorize(".v-table.ar-statuses");
                 return res;
@@ -201,6 +223,9 @@ export default {
                 & th{
                     font-weight: 600 !important;
                 }
+                & td{
+                    padding: 0 8px !important;
+                }
                 & td:nth-child(1), & td:nth-child(2){
                     font-weight: 600;
                     z-index: 1;
@@ -208,7 +233,7 @@ export default {
                     overflow: hidden;
                 }
                 & .ar-status{
-                    margin-right: 0.25rem;
+                    margin-right: 0.5rem;
                 }
             }
         }

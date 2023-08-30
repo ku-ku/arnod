@@ -41,14 +41,20 @@ export async function getorders(){
     }
 };  //getorders
 
-export async function getincome(){
-    const now = new Date();
-    now.setDate(1);
+export async function getincome(_period = null){
+    let period = _period || {};
+    
+    if ( !period.start ){
+        period.start = new Date();
+        period.start.setDate(1);
+        period.end = $moment(period.start).add(1, "months").add(-1, "days").toDate();
+    }
+    
     const res = await $jet.api({
         url: '/mobile/driver/income',
         params: {
-            start_date: $moment(now).format("YYYY-MM-DD"),
-            end_date: $moment(now).add(1, "months").add(-1, "days").format("YYYY-MM-DD")
+            start_date: $moment(period.start).format("YYYY-MM-DD"),
+            end_date: $moment(period.end).format("YYYY-MM-DD")
         }
     });
   
