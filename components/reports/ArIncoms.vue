@@ -190,12 +190,8 @@ export default {
 <style lang="scss">
     .ar-incoms{
         & table {
-            font-size: 0.75rem;
-            line-height: 1.115;
             & tr{
                 & > th{
-                    font-weight: 600 !important;
-                    text-align: center !important;
                     &:first-child{
                         text-align: left !important;
                     }
@@ -205,14 +201,6 @@ export default {
                     &:first-child{
                         text-align: left;
                         font-weight: 600;
-                    }
-                    & .v-chip{
-                        --v-chip-size: 0.65rem;
-                        --v-chip-height: 0;
-                        padding: 0.25rem 0.5rem;
-                        font-size: 0.65rem;
-                        border-radius: 4px;
-                        line-height: 1.115;
                     }
                 }
             }

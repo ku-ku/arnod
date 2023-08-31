@@ -323,26 +323,13 @@ export default {
     .ar-drivers{
         height: fit-content;
         & table {
-            font-size: 0.65rem;
-            line-height: 1.115;
             & tr{
-                & > th{
-                    font-weight: 600 !important;
-                }
                 & > td {
                     text-align: right;
                     &:first-child{
                         text-align: left;
                         font-weight: 600;
                     }                    
-                    & .v-chip{
-                        --v-chip-size: 0.65rem;
-                        --v-chip-height: 0;
-                        padding: 0.25rem 0.5rem;
-                        font-size: 0.65rem;
-                        border-radius: 4px;
-                        line-height: 1.115;
-                    }
                 }
             }
         }

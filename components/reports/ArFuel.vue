@@ -164,24 +164,20 @@ export default {
 <style lang="scss">
     .ar-fuel{
         & table {
-            font-size: 0.75rem;
-            line-height: 1.115;
             & tr{
                 & th{
-                    font-weight: 600 !important;
-                    text-align: center !important;
                     &:first-child{
                         text-align: left !important;
                     }
                 }
                 & td {
                     text-align: right;
-                }
-                & td:nth-child(1){
-                    text-align: left;
-                    font-weight: 600;
-                    z-index: 1;
-                    background-color: #fff !important;
+                    &:first-child{
+                        text-align: left;
+                        font-weight: 600;
+                        z-index: 1;
+                        background-color: #fff !important;
+                    }
                 }
             }
         }

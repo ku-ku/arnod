@@ -314,12 +314,7 @@ export default {
     .ar-vehicles{
         height: fit-content;
         & table {
-            font-size: 0.65rem;
-            line-height: 1.115;
             & tr{
-                & th{
-                    font-weight: 600 !important;
-                }
                 & td {
                     text-align: right;
                     &:first-child{

@@ -181,11 +181,11 @@
         <div class="ar-company__chart">
             <canvas id="chart"></canvas>
         </div>
-        <v-list class="ar-expences"
-                    v-if="expences.length > 0"
-                    density="compact">
-            <v-list-subheader>Детализация затрат по статьям</v-list-subheader>
-            <v-list-item v-for="e in expences"
+        <v-list v-if="expences.show && (expences.items.length > 0)"
+                class="ar-expences"
+                density="compact">
+            <v-list-subheader class="justify-end">Детализация затрат по статьям</v-list-subheader>
+            <v-list-item v-for="e in expences.items"
                          :key="'exp-' + e.id">
                 {{ e.name }}
                 <template v-slot:append>
@@ -193,9 +193,15 @@
                 </template>
             </v-list-item>
         </v-list>
-        <v-progress-linear v-else
-            indeterminate>
-        </v-progress-linear>
+        <div v-else class="my-5 text-center">
+            <v-btn :loading="expences.pending"
+                   prepend-icon="mdi-format-list-bulleted"
+                   color="amber"
+                   variant="flat"
+                   v-on:click="expencesShow">
+                детализация затрат
+            </v-btn>
+        </div>
     </div>
 </template>
 <script>
@@ -368,9 +374,6 @@ export default {
             at: 0
         });
         
-        const expences = ref([]);
-        
-        
         const _buildChart = ()=>{
             const conte = $(".ar-company__chart");
             if (conte.length < 1){
@@ -434,39 +437,15 @@ export default {
             }
         };  //_buildChart
         
-        
-        const {data, pending, error} = useAsyncData('company', async ()=>{
+        let {data, pending, error} = useAsyncData('company', async ()=>{
             if (chart){
                 chart.destroy();
                 chart = null;
             }
-            expences.value = [];
             try {
                 const res = await gettotals(all.period.start, all.period.end);
                 Object.keys(res).forEach(k => totals.value[k] = res[k]);
                 totals.value.at = (new Date()).getTime();
-                getexpences(all.period.start, all.period.end).then( res => {
-                    var all = 0, res = res;
-                    res.push({
-                        id: 777777,
-                        name: 'Зарплата',
-                        cost: totals.value.expenses_driver
-                    });
-                    res.push({
-                        id: 888888,
-                        name: 'Налог',
-                        cost: totals.value.expenses_driver_vat
-                    });
-                    res = res.sort( (e1, e2) => {
-                        return (e1.cost > e2.cost) ? -1 : (e1.cost < e2.cost) ? 1 : 0;
-                    });
-                    res.forEach( r => all += r.cost);
-                    res.push({id: 999999, name: 'ИТОГО', cost: all});
-                    
-                    expences.value = res;
-                }).catch(e => {
-                    console.log('ERR (getexpences)', e);
-                });
                 let d2 = $moment(all.period.start).add(-1, 'months'),
                     d3 = $moment(all.period.end).add(-1, 'months');
                 gettotals(d2.toDate(), d3.toDate()).then( prev => {
@@ -485,8 +464,101 @@ export default {
             }
         });
         
+        useAsyncData('company-expences', ()=>{
+            expences.value.items = [];
+            if (!expences.value.show){
+                return;
+            }
+            expences.value.pending = true;
+            getexpences(all.period.start, all.period.end)
+                .then( res => {
+                    expences.value.items = res;
+                    _exp_adds();
+                    expences.value.pending = false;
+                }).catch(e => {
+                    expences.value.pending = false;
+                    console.log('ERR (getexpences)', e);
+                });
+        });
+        
+        const expences = ref({
+                show: false,
+                pending: false,
+                items: []
+            });
+            
+        /**
+         * Adding a exp-recalc & total values
+         * @returns {undefined}
+         */
+        const _exp_adds = ()=>{
+            if (!expences.value.show){
+                return;
+            }
+            
+            let n, cost = 0, res = expences.value.items;
+
+            //clean
+            [777777, 888888, 999999, 100000].forEach( id => {
+                n = res.findIndex( r => r.id === id);
+                if ( n > -1 ){
+                    res.splice(n, 1);
+                }
+            });
+            
+            if ( totals.value.incSlrSlr ){
+                res.push({
+                            id: 777777,
+                            name: 'Зарплата',
+                            cost: totals.value.expenses_driver
+                });
+                    
+            }
+            if ( totals.value.incSlrVat ){
+                res.push({
+                            id: 888888,
+                            name: 'Налог',
+                            cost: totals.value.expenses_driver_vat
+                });
+            }
+            switch(totals.value.fuelMode){
+                case 0:
+                    cost = totals.value.actual_fuel_expenses;
+                    break;
+                case 1:
+                    cost = totals.value.estimated_fuel_expenses;
+                    break;
+                case 2:
+                    cost = totals.value.reported_fuel_expenses;
+                    break;
+            };
+            if ( cost > 0 ) {
+                expences.value.items.push({
+                        id: 999999,
+                        name: 'ГСМ',
+                        cost
+                });
+            }
+            cost = 0;
+            res = res.sort( (e1, e2) => {
+                return (e1.cost > e2.cost) ? -1 : (e1.cost < e2.cost) ? 1 : 0;
+            });
+            res.forEach( r => {
+                r.cost = Math.round(r.cost * 100) / 100;
+                cost += r.cost;
+            });
+            res.push({id: 100000, name: 'ИТОГО', cost});
+            
+            expences.value.items = res;
+            
+        };  //_exp_adds
+            
         const at = computed(()=>{ return totals.value.at; });
-        watch(at, _buildChart);
+        
+        watch(at, ()=>{
+            _buildChart();
+            _exp_adds();
+        });
         
         return {
             pending,
@@ -498,6 +570,11 @@ export default {
     methods: {
         refresh(){
             refreshNuxtData('company');
+            refreshNuxtData('company-expences');
+        },
+        expencesShow(){
+            this.expences.show = true;
+            refreshNuxtData('company-expences');
         }
     }
 }

@@ -122,8 +122,6 @@ export default {
             }
             & .v-data-table{
                 & table {
-                    font-size: 0.7rem;
-                    line-height: 1.125;
                     & tr{
                         & td:last-child{
                             text-align: right;

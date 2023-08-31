@@ -7,25 +7,50 @@ html, body {
     font-size: 0.666rem;
 }
 
-.v-table{
-    & tr {
-        & > td {
-            &.v-data-table-column--fixed{
-                background-color: #fff !important;
-                z-index: 1;
+.v-data-table {
+    & table {
+        font-size: 0.85rem;
+        line-height: 1.125;
+        & tr {
+            & > th{
+                font-weight: 600 !important;
             }
-            & .v-chip{
-                --v-chip-size: 0.65rem;
-                --v-chip-height: 0;
-                padding: 0.25rem 0.5rem;
-                font-size: 0.65rem;
-                border-radius: 4px;
-                line-height: 1.115;
+            & > td {
+                white-space: nowrap;
+                &.v-data-table-column--fixed{
+                    background-color: #fff !important;
+                    z-index: 1;
+                }
+                & .v-chip{
+                    --v-chip-size: 0.65rem;
+                    --v-chip-height: 0;
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.85rem;
+                    border-radius: 4px;
+                    line-height: 1.115;
+                }
+            }
+            &.ar-bad{
+                & > td {
+                    background-color: #FFFDE7 !important; /* yellow-lighten-5*/
+                }
             }
         }
-        &.ar-bad{
-            & > td {
-                background-color: #FFFDE7 !important; /* yellow-lighten-5*/
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .v-data-table {
+        & table {
+            font-size: 0.65rem;
+            line-height: 1.115;
+            & tr {
+                & > td{
+                    padding: 0 8px !important;
+                    & .v-chip{
+                        font-size: 0.65rem;
+                    }
+                }
             }
         }
     }

@@ -129,12 +129,7 @@ export default {
 <style lang="scss">
     .ar-contras{
         & table {
-            font-size: 0.75rem;
-            line-height: 1.115;
             & tr{
-                & th{
-                    font-weight: 600 !important;
-                }
                 & td {
                     text-align: right;
                     &:first-child{

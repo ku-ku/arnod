@@ -217,15 +217,7 @@ export default {
 <style lang="scss">
     .ar-statuses{
         & table {
-            font-size: 0.65rem;
-            line-height: 1.115;
             & tr{
-                & th{
-                    font-weight: 600 !important;
-                }
-                & td{
-                    padding: 0 8px !important;
-                }
                 & td:nth-child(1), & td:nth-child(2){
                     font-weight: 600;
                     z-index: 1;
