@@ -1,7 +1,8 @@
 <template>
     <v-sheet class="ar-chief">
         <v-toolbar density="compact" 
-                   flat class="py-2"
+                   flat 
+                   class="py-2 px-sm-3"
                    absolute
                    height="48"
                    color="white"
@@ -116,6 +117,7 @@
     </v-sheet>
 </template>
 <script>
+import { useDisplay } from 'vuetify';    
 import { profile } from "app-ext/composables/profile";
     
 import ArCompany from  "~/components/reports/ArCompany";

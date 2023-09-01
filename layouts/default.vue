@@ -3,7 +3,8 @@
         <NuxtLoadingIndicator />
         <v-app-bar color="white"
                    elevation="1"
-                   density="compact">
+                   density="compact"
+                   >
             <template v-slot:prepend>
                 <v-btn v-if="has('back')"
                        icon="mdi-chevron-left"
@@ -14,6 +15,7 @@
                 </v-app-bar-nav-icon>
                 <div class="ar-title" v-html="title"></div>
             </template>
+            <div id="bar-free"></div>
             <template v-if="has('subject') && has('driver')">
                 <ar-income />
             </template>

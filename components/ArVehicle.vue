@@ -110,7 +110,15 @@ export default {
     },
     computed: {
         active_status(){
-            return this.vehicle?.active_status || {id: -1, pivot:{id: -1}};
+            const empty = {id: -1, pivot:{id: -1}},
+                  status = this.vehicle?.active_status;
+            if (!status){
+                return empty;
+            }
+            let end = status.pivot.end_date;
+            return (!end) ? status 
+                          : $moment(end, 'YYYY-MM-DD HH:mm:ss').isAfter(new Date())
+                          ? status : empty;
         },
         trailers(){
             return this.vehicle?.trailers?.map( t => t.reg_number ).join(", ");

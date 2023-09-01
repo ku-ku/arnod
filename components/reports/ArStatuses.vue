@@ -58,6 +58,8 @@ import { all } from "~/composables/data";
 import { getstatuses } from "~/services/company";
 import ArBaseReport from "./ArBaseReport";
 import { colorize } from "./ArBaseReport";
+import { empty } from "app-ext//utils";
+
 
 const _HDRS = [
     {title: 'ТС',           key: 'reg_number', sortable: true,  fixed: true, width: 96},
@@ -97,6 +99,7 @@ export default {
                     
                             //r.active_status;
                     r.expired = false;
+/*                    
                     if ( order?.driver ){
                         r.drivers = order.driver.user.full_name;
                     } else {
@@ -105,6 +108,18 @@ export default {
                             return !end || end.isSameOrAfter(now);
                         })?.map( d => d.user.full_name )?.join(', ');
                     }
+* 
+*/
+                    r.drivers = r.drivers?.filter( d => {
+                        let end = $moment().fromSql(d.pivot.end_date);
+                        return !end || end.isSameOrAfter(now);
+                    })?.map( d => d.user.full_name )?.at(0);
+                    if ( empty(r.drivers) ){
+                        if ( order?.driver ){
+                            r.drivers = order.driver.user.full_name;
+                        }
+                    }
+                    
                     r.status = status?.title || '';
                     if ( /^(загру)+.*(назна)+/i.test(r.status) ){
                         r.ico = "mdi-clock-alert-outline";
