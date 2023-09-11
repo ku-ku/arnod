@@ -1,6 +1,7 @@
 export async function gettotals(d1, d2){
     const res = await $jet.api({
         url: '/reports/total',
+        key: 'totals',
         params: {
             start_date: $moment(d1).format('YYYY-MM-DD'),
             end_date: $moment(d2).format('YYYY-MM-DD')
@@ -16,6 +17,7 @@ export async function gettotals(d1, d2){
 export async function getexpences(d1, d2){
     const res = await $jet.api({
         url: '/expenses',
+        key: 'expenses',
         params: {
             start_date: $moment(d1).format('YYYY-MM-DD'),
             end_date: $moment(d2).format('YYYY-MM-DD'),

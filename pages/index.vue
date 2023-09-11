@@ -1,19 +1,19 @@
 <template>
-    <template v-if="has('chief')">
-        <ar-reports />
-    </template>
     <template v-if="has('driver')">
         <ar-vehicle v-on:odometer="$refs['odometer'].open()" />
         <ar-orders />
         <ar-odometer ref="odometer" />
     </template>    
+    <template v-if="has('chief')">
+        <ar-dashboard />
+    </template>
 </template>
 <script>
 import { profile } from "app-ext/composables/profile";
 import ArVehicle from "~/components/ArVehicle";
 import ArOrders from "~/components/ArOrders";
 import ArOdometer from "~/components/ArOdometer";
-import ArReports from "~/components/ArReports";
+import ArDashboard from "~/components/dashboard/ArDashboard";
 
 export default {
     name: 'pageIndex',
@@ -21,7 +21,7 @@ export default {
         ArVehicle,
         ArOrders,
         ArOdometer,
-        ArReports
+        ArDashboard
     },
     methods: {
         has(q){

@@ -11,15 +11,15 @@
   "dependencies": {
     "@turf/turf": "^6.5.0",
     "app-ext": "link:./../app-ext",
-    "chart.js": "^4.3.0",
-    "ol": "^7.4.0",
+    "chart.js": "^4.4.0",
+    "ol": "^8.1.0",
     "splitpanes": "^3.1.5",
     "vue": "^3.3.4"
   },
   "devDependencies": {
     "@nuxt/devtools": "^0.8.2",
     "@types/node": "^18",
-    "nuxt": "^3.6.5",
+    "nuxt": "^3.7.1",
     "sass": "^1.60.0"
   }
 }

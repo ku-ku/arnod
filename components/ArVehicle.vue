@@ -42,17 +42,20 @@
                         <div class="py-3">
                             <v-btn :color="(18 == active_status.id) ? 'primary' : undefined"
                                    :prepend-icon="(18 == active_status.id) ? 'mdi-checkbox-outline' : undefined"
+                                   :loading="(18 == sttPending)"
                                    v-on:click="onstatus('go')">
                                 еду на ТО
                             </v-btn>
                             <v-btn :color="(19 == active_status.id) ? 'primary' : undefined"
                                    :prepend-icon="(19 == active_status.id) ? 'mdi-checkbox-outline' : undefined"
+                                   :loading="(19 == sttPending)"
                                    v-on:click="onstatus('to')">
                                 на ТО
                             </v-btn>
                             <v-btn v-on:click="onstatus('def')"
                                    :disabled="!has('vc-status')"
-                                   :color="has('vc-status') ? 'orange-lighten-4' : undefined">
+                                   :color="has('vc-status') ? 'orange-lighten-4' : undefined"
+                                   :loading="(0 == sttPending)">
                                    <v-icon>mdi-close</v-icon>
                             </v-btn>
                         </div>
@@ -82,6 +85,9 @@ export default {
         ArFuel
     },
     async setup(){
+        /* status change pending: -1, 0, 18, 19*/
+        const sttPending = ref(-1);
+        
         const {data: vehicle, pending, error} = useAsyncData('vehicle', all.getvehicle, {immediate: true});
 
         watch(vehicle, ()=>{
@@ -98,6 +104,7 @@ export default {
 
         return {
             pending,
+            sttPending,
             error,
             vehicle
         };
@@ -222,6 +229,9 @@ export default {
                                         method: 'POST',
                                         body: opts
                             }));
+                            
+                    this.sttPending = status.val;
+                            
                     let res = await Promise.all(all);
                     for (let i = 0; i < res.length; i++){
                         if ( !res[i].success ){
@@ -232,6 +242,8 @@ export default {
                 } catch(e) {
                     console.log('ERR(status)', e);
                     $jet.msg({text: `Не удается изменить статус, попробуйте еще раз<br /><small>${ e.message }</small>`, color: 'warning'});
+                } finally {
+                    this.sttPending = -1;
                 }
                 
             };  //_change

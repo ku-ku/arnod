@@ -81,4 +81,8 @@ export default defineNuxtPlugin(nuxtApp => {
         ym(config.YM_ID, 'notBounce');
          //Yandex.Metrika counter 
     }
+    
+    nuxtApp.refresh = q => {
+        refreshNuxtData(q);
+    }
 });

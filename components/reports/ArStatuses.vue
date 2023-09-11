@@ -35,6 +35,13 @@
                 </div>
             </div>
         </template>
+        <template v-slot:item.status="{ item }">
+            {{ item.raw.status }}
+            <div v-if="item.raw.status2"
+                 class="text-muted">
+                {{ item.raw.status2 }}
+            </div>
+        </template>
         <template v-slot:item.at="{ item }">
             <v-chip v-if="item.raw.expired" color="red-accent-4">
                 {{ dtformat(item.raw.at) }}
@@ -86,39 +93,28 @@ export default {
                 emit('count', res.length);
                 res.forEach( r => {
                     const status = r.active_status;
-/*                    
-                    r.last_status?.map( s => {
-                        s.created = $moment(s.created_at, 'YYYY-MM-DD');
-                        return s;
-                    }).sort( (s1, s2) => {
-                        return s1.created.isBefore(s2) ? -1 : s1.created.isAfter(s2) ? 1 : 0
-                    }).at(0); 
-* 
-*/
                     const order = status?.pivot?.vehicle_order;
-                    
-                            //r.active_status;
                     r.expired = false;
-/*                    
-                    if ( order?.driver ){
-                        r.drivers = order.driver.user.full_name;
-                    } else {
-                        r.drivers = r.drivers?.filter( d => {
-                            let end = !!d.pivot.end_date ? $moment(d.pivot.end_date, 'YYYY-MM-DD HH:mm:ss') : null;
-                            return !end || end.isSameOrAfter(now);
-                        })?.map( d => d.user.full_name )?.join(', ');
-                    }
-* 
-*/
-                    r.drivers = r.drivers?.filter( d => {
-                        let end = $moment().fromSql(d.pivot.end_date);
-                        return !end || end.isSameOrAfter(now);
-                    })?.map( d => d.user.full_name )?.at(0);
-                    if ( empty(r.drivers) ){
-                        if ( order?.driver ){
-                            r.drivers = order.driver.user.full_name;
+                    
+                    if ( (status)&&(r.last_status?.at(0) ) ) {
+                        const last = r.last_status.at(0);
+                        if ( status.pivot.id !== last.pivot.id ){
+                            r.status2 = `${ last.title }: ${ $moment(last.pivot.start_date, 'YYYY-MM-DD').format('DD.MM.YYYY') }`;
                         }
                     }
+                    
+                    let driver = r.drivers?.filter( d => {
+                        let end = $moment().fromSql(d.pivot.end_date);
+                        return !end || end.isSameOrAfter(now);
+                    })?.at(0);
+                    
+                    if ( driver ){
+                        r.activity = driver.activity;
+                    } else {
+                        driver = order?.driver;
+                    }
+                    
+                    r.drivers = driver?.user.full_name;
                     
                     r.status = status?.title || '';
                     if ( /^(загру)+.*(назна)+/i.test(r.status) ){
@@ -242,6 +238,9 @@ export default {
                 & .ar-status{
                     margin-right: 0.5rem;
                 }
+            }
+            & .text-muted{
+                font-weight: 400;
             }
         }
         & .v-data-table-footer{
