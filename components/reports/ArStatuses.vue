@@ -37,19 +37,15 @@
         </template>
         <template v-slot:item.status="{ item }">
             {{ item.raw.status }}
-            <div v-if="item.raw.status2"
-                 class="text-muted">
-                {{ item.raw.status2 }}
-            </div>
         </template>
-        <template v-slot:item.at="{ item }">
+        <!--template v-slot:item.at="{ item }">
             <v-chip v-if="item.raw.expired" color="red-accent-4">
                 {{ dtformat(item.raw.at) }}
             </v-chip>
             <template v-else>
                 {{ dtformat(item.raw.at) }}
             </template>
-        </template>
+        </template-->
         <template v-slot:item.activity="{ item }">
             <template v-if="!(item.raw.actidays > 1)">
                 {{ dtformat(item.raw.activity) }}
@@ -70,7 +66,7 @@ import { empty } from "app-ext//utils";
 
 const _HDRS = [
     {title: 'ТС',           key: 'reg_number', sortable: true,  fixed: true, width: 96},
-    {title: 'статус',       key: 'status',     sortable: true,  fixed: true, width: 52},
+    {title: 'статус',       key: 'status',     sortable: true,  fixed: true, width: 38},
     {title: 'контрагент',   key: 'contractor', sortable: true,  width: 200},
     {title: 'водитель',     key: 'drivers',    sortable: true,  width: 100},
     {title: 'изм.',         key: 'at',         sortable: true,  width: 120},
@@ -118,21 +114,27 @@ export default {
                     
                     r.status = status?.title || '';
                     if ( /^(загру)+.*(назна)+/i.test(r.status) ){
+                        r.status = 'з/назн.';
                         r.ico = "mdi-clock-alert-outline";
                         r.color = "blue";
                     } else if (/^(прибыл)+.*(загр)+/i.test(r.status) ){
+                        r.status = 'прибыл';
                         r.ico = "mdi-truck-delivery-outline";
                         r.color = "indigo";
                     } else if (/^(загружен)+/i.test(r.status) ){
+                        r.status = 'загр.';
                         r.ico = "mdi-truck-check-outline"
                         r.color = "teal";
                     } else if (/^(прибыл)+.*(выгр)+/i.test(r.status) ){
+                        r.status = 'пр/выг.';
                         r.ico = "mdi-forklift";
                         r.color = "light-green";
                     } else if (/^(выгружен)+/i.test(r.status) ){
+                        r.status = 'выгружен';
                         r.ico = "mdi-truck-flatbed";
-                        r.color = "blue-grey";
+                        r.color = "red";
                     } else if (/(ТО)+/.test(r.status) ){
+                        r.status = "ТО";
                         r.ico = "mdi-engine-outline";
                         r.color = "amber";
                     }
@@ -193,7 +195,7 @@ export default {
                         r.actidays = 999;
                     }
                 });
-                colorize(".v-table.ar-statuses");
+                //TODO: colorize(".v-table.ar-statuses");
                 return res;
             } catch(e){
                 console.log('ERR (statuses)', e);

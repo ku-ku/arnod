@@ -115,6 +115,7 @@
                                  title="заказы"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-truck-fast-outline"
+                                 :to="{name: 'company-trips'}"
                                  title="рейсы"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-calculator-variant-outline"
