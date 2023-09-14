@@ -1,7 +1,7 @@
 <template>
     <v-skeleton-loader v-if="pending"
                        type="list-item@3" />
-    <template v-else>
+    <template v-else-if="has('orders')">
         <v-row class="ar-orders">
             <v-col cols="12" sm="4"
                    v-for="o in orders"
@@ -89,6 +89,15 @@ export default {
             pending,
             error
         };
+    },
+    methods: {
+        has(q){
+            switch(q){
+                case 'orders':
+                    return this.orders?.length > 0;
+            }
+            return false;
+        }
     }
 }
 </script>
@@ -113,7 +122,7 @@ export default {
                 right: 0.85rem;
                 top: -0.85rem;
                 background: #fff;
-                border: 1px solid #dfdfdf;
+                border: 1px solid rgba(var(--v-theme-primary), 0.3);
                 border-radius: 6px;
                 padding: 0.25rem 0.5rem;
                 background: #E8F5E9;

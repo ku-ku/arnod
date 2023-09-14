@@ -1,8 +1,5 @@
 <template>
-    <v-skeleton-loader type="list-item@3" 
-                       v-if="pending" />
-        <v-data-table v-else
-                      density="compact"
+        <v-data-table density="compact"
                       ref="table"
                       class="ar-drivers"
                       fixed-header
@@ -13,6 +10,7 @@
                       :items="items"
                       :items-per-page="-1"
                       :model-value="selected"
+                      :loading="pending"
                       item-value="driver"
                       single-select
                       disable-pagination
@@ -152,9 +150,10 @@ export default {
         });
         
         const emptyEmps = ref([]),
-              showEmpty = ref(true);
+              showEmpty = ref(true),
+              items     = ref([]);
         
-        const {data: items, pending, error} = useLazyAsyncData('company', async ()=>{
+        const { pending, error } = useLazyAsyncData('company', async ()=>{
             try {
                 const empty = [];
                 let res = await getbydrivers(all.period.start, all.period.end);
@@ -298,9 +297,11 @@ export default {
                     return r1.driver?.localeCompare(r2.driver);
                 });
                 res.push(totals);
+                items.value = res;
+                
                 colorize(".ar-drivers.v-data-table");
                 
-                return res;
+                return true;
             } catch(e){
                 console.log('ERR (drivers)', e);
                 emit('error', e);

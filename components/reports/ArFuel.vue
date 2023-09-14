@@ -1,8 +1,5 @@
 <template>
-    <v-skeleton-loader type="list-item@3" 
-                       v-if="pending" />
-    <v-data-table v-else
-                  density="compact"
+    <v-data-table density="compact"
                   ref="table"
                   class="ar-fuel"
                   fixed-header
@@ -14,6 +11,7 @@
                   :items="items"
                   :items-per-page="-1"
                   :model-value="selected"
+                  :loading="pending"
                   single-select
                   disable-pagination
                   hide-default-footer
@@ -63,8 +61,10 @@ export default {
     name: 'ArFuel',
     extends: ArBaseReport,
     async setup(props, { emit }){
-        const now = new Date();
-        const {data: items, pending, error} = useLazyAsyncData('company', async ()=>{
+        const now = new Date(),
+              items = ref([]);
+      
+        const { pending, error } = useLazyAsyncData('company', async ()=>{
             try {
                 const res = await getfuel(all.period.start, all.period.end),
                     total = {
@@ -143,8 +143,10 @@ export default {
                     odometer: Math.trunc(total.odometer) + ' (ср.: ' + Math.trunc(total.avgodometer) + ' км)'
                 });
                 
+                items.value = res;
+                
                 colorize(".v-table.ar-fuel");
-                return res;
+                return true;
             } catch(e){
                 console.log('ERR (fuel)', e);
                 emit('error', e);

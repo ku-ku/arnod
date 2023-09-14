@@ -1,7 +1,8 @@
 <template>
     <v-skeleton-loader type="list-item@3" 
                        v-if="pending" />
-    <div v-else class="ar-company">
+    <div v-else-if="has('data')" 
+         class="ar-company">
         <v-list density="compact">
             <v-list-item title="Валовый доход"
                          class="text-h6">
@@ -221,14 +222,12 @@ export default {
     name: 'ArCompany',
     extends: ArBaseReport,
     async setup(props, { emit }){
-        
         onUnmounted(()=>{
             if (chart){
                 chart.destroy();
                 chart = null;
             }
         });
-        
         const _buildChart = ()=>{
             const conte = $(".ar-company__chart");
             if (conte.length < 1){
@@ -410,6 +409,13 @@ export default {
         };
     },
     methods: {
+        has(q){
+            switch(q){
+                case 'data':
+                    return (!!this.totals?.at);
+            }
+            return false;
+        },
         refresh(){
             refreshNuxtData('company');
             refreshNuxtData('company-expences');

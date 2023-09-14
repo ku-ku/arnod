@@ -1,7 +1,5 @@
 <template>
-    <v-skeleton-loader type="list-item@3" 
-                       v-if="pending" />
-    <v-data-table v-else
+    <v-data-table
                   density="compact"
                   ref="table"
                   class="ar-contras"
@@ -14,6 +12,7 @@
                   :items="items"
                   :items-per-page="-1"
                   :model-value="selected"
+                  
                   single-select
                   disable-pagination
                   hide-default-footer

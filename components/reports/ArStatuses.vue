@@ -1,8 +1,5 @@
 <template>
-    <v-skeleton-loader type="list-item@3" 
-                       v-if="pending" />
-    <v-data-table v-else
-                  density="compact"
+    <v-data-table density="compact"
                   ref="table"
                   class="ar-statuses"
                   fixed-header
@@ -14,6 +11,7 @@
                   :items="items"
                   :items-per-page="-1"
                   :model-value="selected"
+                  :loading="pending"
                   item-value="id"
                   single-select
                   disable-pagination
@@ -36,16 +34,14 @@
             </div>
         </template>
         <template v-slot:item.status="{ item }">
-            {{ item.raw.status }}
+            <span v-if="('red'===item.raw.color)" 
+                  style="color:red;">
+                {{ item.raw.status }}
+            </span>
+            <span v-else>
+                {{ item.raw.status }}
+            </span>
         </template>
-        <!--template v-slot:item.at="{ item }">
-            <v-chip v-if="item.raw.expired" color="red-accent-4">
-                {{ dtformat(item.raw.at) }}
-            </v-chip>
-            <template v-else>
-                {{ dtformat(item.raw.at) }}
-            </template>
-        </template-->
         <template v-slot:item.activity="{ item }">
             <template v-if="!(item.raw.actidays > 1)">
                 {{ dtformat(item.raw.activity) }}
@@ -62,7 +58,6 @@ import { getstatuses } from "~/services/company";
 import ArBaseReport from "./ArBaseReport";
 import { colorize } from "./ArBaseReport";
 import { empty } from "app-ext//utils";
-
 
 const _HDRS = [
     {title: 'ТС',           key: 'reg_number', sortable: true,  fixed: true, width: 96},
@@ -81,9 +76,11 @@ export default {
     name: 'ArStatuses',
     extends: ArBaseReport,
     async setup(props, { emit }){
-        const now = new Date();
-        const s_now = $moment().format("DD.MM.YYYY");
-        const {data: items, pending, error} = useAsyncData('company', async ()=>{
+        const now = new Date(),
+              s_now = $moment().format("DD.MM.YYYY"),
+              items = ref([]);
+      
+        const { pending, error } = useAsyncData('company', async ()=>{
             try {
                 const res = await getstatuses(all.period.start, all.period.end);
                 emit('count', res.length);
@@ -196,7 +193,8 @@ export default {
                     }
                 });
                 //TODO: colorize(".v-table.ar-statuses");
-                return res;
+                items.value = res;
+                return true;
             } catch(e){
                 console.log('ERR (statuses)', e);
                 emit('error', e);
@@ -216,13 +214,21 @@ export default {
         };
     },
     methods: {
+        has(q){
+            switch(q){
+                case 'data':
+                    return this.items?.length > 0;
+            }
+            return false;
+        },
         refresh(){
             refreshNuxtData('company');
         }
+        
     },
     computed: {
         count(){
-            return this.items?.length > 0 ? this.items?.length : '';
+            return this.items?.length > 0 ? this.items.length : '';
         }
     }
 }    
