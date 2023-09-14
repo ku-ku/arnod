@@ -287,7 +287,6 @@ export default {
                             prev = r.profit;
                     });
                 }
-                _buildChart();
                 emptyEmps.value = empty.sort( (s1, s2)=>{
                     return s1?.localeCompare(s2);
                 });
@@ -300,6 +299,8 @@ export default {
                 items.value = res;
                 
                 colorize(".ar-drivers.v-data-table");
+                
+                _buildChart();
                 
                 return true;
             } catch(e){

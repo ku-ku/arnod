@@ -1,8 +1,5 @@
 <template>
-    <v-skeleton-loader type="list-item@3" 
-                       v-if="pending" />
-    <v-data-table v-else
-                  density="compact"
+    <v-data-table density="compact"
                   ref="table"
                   class="ar-incoms"
                   fixed-header
@@ -14,6 +11,7 @@
                   :items="items"
                   :items-per-page="-1"
                   :model-value="selected"
+                  :loading="pending"
                   single-select
                   disable-pagination
                   hide-default-footer
@@ -113,9 +111,10 @@ export default {
     async setup(props, { emit }){
         
         const emptyEmps = ref([]),
-              showEmpty = ref(true);
+              showEmpty = ref(true),
+              items     = ref([]);
         
-        const {data: items, pending, error} = useLazyAsyncData('company', async ()=>{
+        const { pending, error } = useLazyAsyncData('company', async ()=>{
             try {
                 const res = await getincoms(all.period.start, all.period.end),
                     total = {
@@ -162,8 +161,12 @@ export default {
                 });
                 
                 res.items.push( total );
+                
+                items.value = res.items;
+                
                 colorize(".v-table.ar-incoms");
-                return res.items;
+                
+                return true;
             } catch(e){
                 console.log('ERR (incoms)', e);
                 emit('error', e);

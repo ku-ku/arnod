@@ -1,8 +1,5 @@
 <template>
-    <v-skeleton-loader type="list-item@3" 
-                       v-if="pending" />
-    <v-data-table v-else
-                  density="compact"
+    <v-data-table density="compact"
                   ref="table"
                   class="ar-vehicles"
                   fixed-header
@@ -13,6 +10,7 @@
                   :items="items"
                   :items-per-page="-1"
                   :model-value="selected"
+                  :loading="pending"
                   item-value="vehicle"
                   single-select
                   disable-pagination
@@ -143,8 +141,9 @@ export default {
             }
         });
 
+        const items = ref([]);
         
-        const {data: items, pending, error} = useLazyAsyncData('company', async ()=>{
+        const { pending, error } = useLazyAsyncData('company', async ()=>{
             try {
                 chartConf.data.labels = [];
                 chartConf.data.datasets[0] = {
@@ -283,9 +282,13 @@ export default {
                     });
                     res.push(totals);
                 }
-                _buildChart();
+                
                 colorize(".v-table.ar-vehicles");
-                return res;
+                items.value = res;
+                
+                _buildChart();
+                
+                return true;
             } catch(e){
                 console.log('ERR (vehicles)', e);
                 emit('error', e);

@@ -291,7 +291,7 @@ export default {
             }
         };  //_buildChart
         
-        let {data, pending, error} = useAsyncData('company', async ()=>{
+        let {pending, error} = useAsyncData('company', async ()=>{
             if (chart){
                 chart.destroy();
                 chart = null;

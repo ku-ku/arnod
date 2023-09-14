@@ -1,6 +1,5 @@
 <template>
     <v-data-table density="compact"
-                  ref="table"
                   class="ar-statuses"
                   fixed-header
                   disable-sort
@@ -10,14 +9,11 @@
                   :headers="headers"
                   :items="items"
                   :items-per-page="-1"
-                  :model-value="selected"
                   :loading="pending"
-                  item-value="id"
                   single-select
                   disable-pagination
                   hide-default-footer
-                  no-data-text="..."
-                  return-object>
+                  no-data-text="...">
         <template v-slot:item.reg_number="{ item }">
             <div class="d-flex align-center">
                 <v-chip class="ar-status" 
@@ -42,6 +38,9 @@
                 {{ item.raw.status }}
             </span>
         </template>
+        <template v-slot:item.at="{ item }">
+            {{ dtformat(item.raw.at) }}
+        </template>
         <template v-slot:item.activity="{ item }">
             <template v-if="!(item.raw.actidays > 1)">
                 {{ dtformat(item.raw.activity) }}
@@ -57,7 +56,6 @@ import { all } from "~/composables/data";
 import { getstatuses } from "~/services/company";
 import ArBaseReport from "./ArBaseReport";
 import { colorize } from "./ArBaseReport";
-import { empty } from "app-ext//utils";
 
 const _HDRS = [
     {title: 'ТС',           key: 'reg_number', sortable: true,  fixed: true, width: 96},
@@ -80,10 +78,10 @@ export default {
               s_now = $moment().format("DD.MM.YYYY"),
               items = ref([]);
       
-        const { pending, error } = useAsyncData('company', async ()=>{
+        const { pending, error } = useLazyAsyncData('company', async ()=>{
             try {
                 const res = await getstatuses(all.period.start, all.period.end);
-                emit('count', res.length);
+                
                 res.forEach( r => {
                     const status = r.active_status;
                     const order = status?.pivot?.vehicle_order;
@@ -192,7 +190,10 @@ export default {
                         r.actidays = 999;
                     }
                 });
+                
                 //TODO: colorize(".v-table.ar-statuses");
+                emit('count', res.length);
+      
                 items.value = res;
                 return true;
             } catch(e){
@@ -208,30 +209,12 @@ export default {
             items
         };
     },   //setup
-    data(){
-        return {
-            selected: []
-        };
-    },
-    methods: {
-        has(q){
-            switch(q){
-                case 'data':
-                    return this.items?.length > 0;
-            }
-            return false;
-        },
-        refresh(){
-            refreshNuxtData('company');
-        }
-        
-    },
-    computed: {
-        count(){
-            return this.items?.length > 0 ? this.items.length : '';
-        }
+    beforeUnmount(){
+        this.items = [];
+        clearNuxtData('company');
+        console.log('beforeUnmount', this);
     }
-}    
+}
 </script>
 <style lang="scss">
     .ar-statuses{

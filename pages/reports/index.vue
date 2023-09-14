@@ -108,7 +108,7 @@
                     <small>{{ error.message }}</small>
                     <br />попробуйте обновить страницу
                 </v-alert>
-            </div>    
+            </div>
             <component :is="activeReport"
                        :key="'rep-' + report"
                        v-on:error="error = $event"
@@ -117,7 +117,6 @@
     </v-sheet>
 </template>
 <script>
-import { useDisplay } from 'vuetify';    
 import { profile } from "app-ext/composables/profile";
     
 import ArCompany from  "~/components/reports/ArCompany";
@@ -149,14 +148,9 @@ export default {
         ArFuel,
         ArIncoms
     },
-    setup(){
-        const report = ref(0);
-        return {
-            report
-        };
-    },
     data(){
         return {
+            report: 1,
             _REP_COMPS,
             error: null
         };
