@@ -7,6 +7,14 @@ export const all = reactive({
     user: computed(()=>{
         return profile.subject;
     }),
+    
+    /**
+     * Some UI-settings
+     */
+    ui: {
+        extBar: false
+    },
+    
     /** 
      * period for all
      */
@@ -14,6 +22,10 @@ export const all = reactive({
         start: new Date(),
         end:   new Date()
     },
+    /**
+     * time for reload data
+     */
+    at: 0,
     /**
      * Vehicle by user
      */

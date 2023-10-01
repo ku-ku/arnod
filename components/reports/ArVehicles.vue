@@ -18,44 +18,44 @@
                   no-data-text="..."
                   return-object>
         <template v-slot:item.vehicle="{ item }">
-            <div v-if="/^(итог)+/i.test(item.raw.vehicle)" class="font-weight-bold">
-                {{item.raw.vehicle}}
+            <div v-if="/^(итог)+/i.test(item.vehicle)" class="font-weight-bold">
+                {{ item.vehicle }}
             </div>    
             <div v-else class="d-flex align-center justify-space-between w-100">    
                 <span class="ar-vehicles_vc" 
-                      v-html="item.raw.vehicle.replace('/', '<br />')">
+                      v-html="item.vehicle.replace('/', '<br />')">
                 </span>
-                <v-icon v-if="(item.raw.profit2 >= 50)" color="primary">
+                <v-icon v-if="(item.profit2 >= 50)" color="primary">
                     mdi-hand-pointing-up
                 </v-icon>
-                <v-icon v-else-if="(item.raw.profit2)&&(item.raw.profit2 < 50)" color="warning">
+                <v-icon v-else-if="(item.profit2)&&(item.profit2 < 50)" color="warning">
                     mdi-hand-pointing-down
                 </v-icon>
             </div>
         </template>
         <template v-slot:item.gross="{ item }">
-            {{ format(item.raw.gross, 0) }}
+            {{ format(item.gross, 0) }}
         </template>    
         <template v-slot:item.gross_tonne="{ item }">
-            {{ format(item.raw.gross_tonne, 0) }}
+            {{ format(item.gross_tonne, 0) }}
         </template>    
         <template v-slot:item.expenses="{ item }">
             <v-btn variant="text" 
                    size="small"
-                   v-on:click="dodetails(item.raw)">
-                {{ format(item.raw.expenses, 0) }}
+                   v-on:click="dodetails(item)">
+                {{ format(item.expenses, 0) }}
             </v-btn>
         </template>    
         <template v-slot:item.profit="{ item }">
-            <v-chip v-if="item.raw.profit < 0" color="red-accent-4">
-                {{ format(item.raw.profit,0) }}
+            <v-chip v-if="item.profit < 0" color="red-accent-4">
+                {{ format(item.profit,0) }}
             </v-chip>
             <template v-else>
-                {{ format(item.raw.profit,0) }}
+                {{ format(item.profit,0) }}
             </template>
         </template>
         <template v-slot:item.odometer="{ item }">
-            {{ format(item.raw.odometer, 0) }}
+            {{ format(item.odometer, 0) }}
         </template>    
     </v-data-table>
     <div class="ar-vehicles__chart">

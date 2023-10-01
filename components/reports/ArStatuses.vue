@@ -1,7 +1,6 @@
 <template>
     <v-data-table density="compact"
                   class="ar-statuses"
-                  fixed-header
                   disable-sort
                   no-filter
                   height="100%"
@@ -11,6 +10,7 @@
                   :items-per-page="-1"
                   :loading="pending"
                   single-select
+                  sticky
                   disable-pagination
                   hide-default-footer
                   no-data-text="...">
@@ -20,34 +20,51 @@
                         elevation="1"
                         pill
                         variant="tonal"
-                        :color="item.raw.color">
-                    <v-icon>{{ item.raw.ico }}</v-icon>
+                        :color="item.color">
+                    <v-icon>{{ item.ico }}</v-icon>
                 </v-chip>
                 <div>
-                    {{ item.raw.reg_number }}
-                    <div class="text-muted">{{ item.raw.trailer }}</div>
+                    {{ item.reg_number }}
+                    <div class="text-muted">{{ item.trailer }}</div>
                 </div>
             </div>
         </template>
         <template v-slot:item.status="{ item }">
-            <span v-if="('red'===item.raw.color)" 
-                  style="color:red;">
-                {{ item.raw.status }}
+            <span v-if="(item.bad)" 
+                  :style="'color:' + item.color">
+                {{ item.status }}
             </span>
             <span v-else>
-                {{ item.raw.status }}
+                {{ item.status }}
             </span>
         </template>
         <template v-slot:item.at="{ item }">
-            {{ dtformat(item.raw.at) }}
+            {{ dtformat(item.at) }}
         </template>
         <template v-slot:item.activity="{ item }">
-            <template v-if="!(item.raw.actidays > 1)">
-                {{ dtformat(item.raw.activity) }}
+            <template v-if="!(item.actidays > 1)">
+                {{ dtformat(item.activity) }}
             </template>
             <v-chip v-else color="red-accent-4">
-                {{ item.raw.activity ? dtformat(item.raw.activity) + ' (' + item.raw.actidays + ' дн)': 'н/д' }}
+                {{ item.activity ? dtformat(item.activity) + ' (' + item.actidays + ' дн)': 'н/д' }}
             </v-chip>
+        </template>
+        <template v-slot:bottom v-if="(totals.length > 0)">
+            <v-slide-group class="ar-statuses__totals">
+                <v-slide-group-item v-for="(t, n) in totals"
+                                    :key="'tota-' + n">
+                    <v-chip :color="t.color"
+                            :prepend-icon="t.ico"
+                            class="mr-3">
+                        <v-badge :content="t.n"
+                                 inline
+                                 :color="t.color"
+                                 :offset-x="30">
+                            {{ t.status }}
+                        </v-badge>
+                    </v-chip>
+                </v-slide-group-item>    
+            </v-slide-group>
         </template>
     </v-data-table>
 </template>
@@ -76,16 +93,20 @@ export default {
     async setup(props, { emit }){
         const now = new Date(),
               s_now = $moment().format("DD.MM.YYYY"),
-              items = ref([]);
-      
+              items = ref([]),
+              totals = ref([]);
         const { pending, error } = useLazyAsyncData('company', async ()=>{
             try {
                 const res = await getstatuses(all.period.start, all.period.end);
+                const _totals = [];
+                
+                let n;
                 
                 res.forEach( r => {
                     const status = r.active_status;
                     const order = status?.pivot?.vehicle_order;
                     r.expired = false;
+                    r.bad     = false;
                     
                     if ( (status)&&(r.last_status?.at(0) ) ) {
                         const last = r.last_status.at(0);
@@ -108,6 +129,8 @@ export default {
                     r.drivers = driver?.user.full_name;
                     
                     r.status = status?.title || '';
+                    
+                    
                     if ( /^(загру)+.*(назна)+/i.test(r.status) ){
                         r.status = 'з/назн.';
                         r.ico = "mdi-clock-alert-outline";
@@ -127,12 +150,21 @@ export default {
                     } else if (/^(выгружен)+/i.test(r.status) ){
                         r.status = 'выгружен';
                         r.ico = "mdi-truck-flatbed";
-                        r.color = "red";
+                        r.color = "#D50000";    //red
+                        r.bad   = true;
                     } else if (/(ТО)+/.test(r.status) ){
                         r.status = "ТО";
                         r.ico = "mdi-engine-outline";
-                        r.color = "amber";
+                        r.color = "#FFC107"; //amber
+                        r.bad   = true;
                     }
+                    n = _totals.findIndex( t => t.status === r.status);
+                    if ( n < 0 ){
+                        _totals.push({status: r.status, n: 1, color: r.color, ico: r.ico, bad: r.bad});
+                    } else {
+                        _totals[n].n++;
+                    }
+                    
                     r.timeWork = '';
                     r.at = (status) ? status.pivot?.start_date : null;
                     if (r.at){
@@ -195,6 +227,11 @@ export default {
                 emit('count', res.length);
       
                 items.value = res;
+                totals.value = _totals.sort( (t1, t2) => {
+                    return t1.bad ? -1 : t1.status.localeCompare(t2.status);
+                });
+                
+                console.log('_totals', _totals);
                 return true;
             } catch(e){
                 console.log('ERR (statuses)', e);
@@ -206,7 +243,8 @@ export default {
             headers: _HDRS,
             pending,
             error,
-            items
+            items,
+            totals
         };
     },   //setup
     beforeUnmount(){
@@ -236,6 +274,14 @@ export default {
         }
         & .v-data-table-footer{
             display: none;
+        }
+    }
+    .ar-statuses__totals{
+        margin: 0.5rem 0 0.5rem 0.5rem;
+        & .v-badge{
+            &__badge{
+                margin-left: 0.33rem;
+            }
         }
     }
 </style>

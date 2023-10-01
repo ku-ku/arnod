@@ -12,27 +12,26 @@
                   :items="items"
                   :items-per-page="-1"
                   :model-value="selected"
-                  
                   single-select
                   disable-pagination
                   hide-default-footer
                   no-data-text="..."
                   return-object>
         <template v-slot:item.contractor_name="{ item }">
-            <span v-if="item.raw.sum_price===null" class="text-grey">
-                {{ item.raw.contractor_name }}
+            <span v-if="(item.sum_price===null)" class="text-grey">
+                {{ item.contractor_name }}
             </span>
             <template v-else>
-                {{ item.raw.contractor_name }}
+                {{ item.contractor_name }}
             </template>    
         </template>
         <template v-slot:item.sum_price="{ item }">
-            {{ format(item.raw.sum_price) }}
-            <v-chip v-if="item.raw.trend !== null"
+            {{ format(item.sum_price) }}
+            <v-chip v-if="(item.trend !== null)"
                     class="ml-3"
                     size="small"
-                    :text="item.raw.trend + '%'"
-                    :color="item.raw.trend > 0 ? 'primary' : 'red-accent-4' ">
+                    :text="item.trend + '%'"
+                    :color="item.trend > 0 ? 'primary' : 'red-accent-4' ">
             </v-chip>
         </template>
     </v-data-table>

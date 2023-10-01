@@ -53,42 +53,54 @@
                             <v-list-item v-if="totals.vehicles"
                                          class="ar-stats">
                                 <v-slide-group>
-                                    <v-chip prepend-icon="mdi-truck-outline" size="large"
+                                    <v-chip prepend-icon="mdi-truck-outline" 
+                                            size="large"
+                                            label
                                             color="primary">
                                         <b>{{ totals.vehicles.num }}</b>
                                         <div class="text-muted">
                                             транспорт
                                         </div>
                                     </v-chip>
-                                    <v-chip prepend-icon="mdi-kettlebell" size="large"
+                                    <v-chip prepend-icon="mdi-kettlebell" 
+                                            size="large"
+                                            label
                                             color="primary">
                                         <div><b>{{ format(totals.vehicles.tonnage, 0) }}</b>&nbsp;т.</div>
                                         <div class="text-muted">
                                             тоннаж
                                         </div>
                                     </v-chip>
-                                    <v-chip prepend-icon="mdi-truck-check-outline" size="large"
+                                    <v-chip prepend-icon="mdi-truck-check-outline" 
+                                            size="large"
+                                            label
                                             color="primary">
                                         <div><b>{{ format(totals.vehicles.unloaded, 1) }}</b>&nbsp;т.</div>
                                         <div class="text-muted">
-                                            перевезено
+                                            перевезено (рейсов {{ totals.vehicles.trips }})
                                         </div>
                                     </v-chip>
-                                    <v-chip prepend-icon="mdi-truck-fast-outline" size="large"
+                                    <v-chip prepend-icon="mdi-truck-fast-outline" 
+                                            size="large"
+                                            label
                                             color="primary">
                                         <div><b>{{ format(totals.vehicles.distance, 0) }}</b>&nbsp;км.</div>
                                         <div class="text-muted">
                                             пробег&nbsp;(ср.:{{ format(totals.vehicles.avg_distance, 0) }})
                                         </div>
                                     </v-chip>
-                                    <v-chip prepend-icon="mdi-gas-station-outline" size="large"
+                                    <v-chip prepend-icon="mdi-gas-station-outline" 
+                                            size="large"
+                                            label
                                             color="primary">
                                         <div><b>{{ format(totals.vehicles.refueled,0) }}</b>&nbsp;л.</div>
                                         <div class="text-muted">
                                             заправлено&nbsp;(цена: {{ totals.vehicles.fuel_cost}}р.)
                                         </div>
                                     </v-chip>
-                                    <v-chip prepend-icon="mdi-water-outline" size="large"
+                                    <v-chip prepend-icon="mdi-water-outline" 
+                                            size="large"
+                                            label
                                             color="primary">
                                         <div><b>{{ format(totals.vehicles.norm_consumption, 1) }}</b>&nbsp;л/100км</div>
                                         <div class="text-muted">
@@ -142,6 +154,8 @@ export default {
     name: 'ArDashboard',
     extends: ArBaseReport,
     setup(){
+        
+        totals.value.pre();
         
         const at = computed({
             get(){return all.period.start;}
@@ -203,7 +217,6 @@ export default {
                     padding-bottom: 1rem;
                     & .v-chip{
                         --v-chip-height: unset;
-                        border-radius: 6px;
                         padding-top: 0.5rem;
                         padding-bottom: 0.5rem;
                         font-size: 0.85rem;

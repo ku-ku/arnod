@@ -1,6 +1,8 @@
 import { ref } from "vue";
 import { gettotals } from "~/services/company";
 
+let _save_totals;
+
 export const totals = ref({
     period: {start: 0, end: 0},
     gross: 0, 
@@ -150,6 +152,7 @@ export const totals = ref({
         return null;
     },
     at: 0,
+    vehicles: [],
     pending: false,
     error: null,
     async load(period){
@@ -158,17 +161,22 @@ export const totals = ref({
         totals.value.pending = true;
         try {
             const res = await gettotals(period.start, period.end);
-                Object.keys(res).forEach(k => totals.value[k] = res[k]);
-                let d2 = $moment(period.start).add(-1, 'months'),
-                    d3 = $moment(period.end).add(-1, 'months');
-                gettotals(d2.toDate(), d3.toDate()).then( prev => {
-                    Object.keys(prev).forEach(k => totals.value.prev[k] = prev[k]);
-                    totals.value.prev.days = d3.diff(d2, 'days');
-                    totals.value.prev.loaded = true;
-                    console.log('at prev', d2, totals.value.prev);
-                }).catch(e => {
-                    console.log('ERR (totals prev)', e);
-                });
+            Object.keys(res).forEach(k => totals.value[k] = res[k]);
+            _save_totals(totals.value);
+            
+            /**
+             * prev period loading
+             */
+            let d2 = $moment(period.start).add(-1, 'months'),
+                d3 = $moment(period.end).add(-1, 'months');
+            gettotals(d2.toDate(), d3.toDate()).then( prev => {
+                Object.keys(prev).forEach(k => totals.value.prev[k] = prev[k]);
+                totals.value.prev.days = d3.diff(d2, 'days');
+                totals.value.prev.loaded = true;
+                console.log('at prev', d2, totals.value.prev);
+            }).catch(e => {
+                console.log('ERR (totals prev)', e);
+            });
         } catch(e){
             console.log('ERR (totals)', e);
             totals.value.error = e;
@@ -176,5 +184,46 @@ export const totals = ref({
             totals.value.at = (new Date()).getTime();
             totals.value.pending = false;
         }
-    }
+    },
+    pre: ()=>{
+        if (
+                (totals.value.at !== 0)
+             || (!$jet.worker)
+           ){
+            return;
+        }
+        $jet.worker.addEventListener("message", e => {
+            if ("read" === e.data.type) {
+                if (e.data?.totals){
+                    let o;
+                    eval(`o=${ e.data.totals }`);
+                    Object.keys( o ).forEach( k=> {
+                        totals.value[k] = o[k];
+                    });
+                }
+            }
+        }, {once: true});
+        $jet.worker.postMessage({ type:"read", name: "totals" });
+    },
 });
+
+
+_save_totals = e => {
+    console.log('saving totals', e);
+    const o = {
+        at: 0,
+        gross: 0, 
+        expenses: 0, 
+        expenses_driver: 0, 
+        expenses_driver_vat: 0, 
+        actual_fuel_expenses: 0, 
+        estimated_fuel_expenses: 0, 
+        reported_fuel_expenses: 0, 
+        profit: 0,
+        vehicles: []
+    };
+    if ( $jet.worker ){
+        Object.keys(o).forEach( k => { o[k] = e[k]; });
+        $jet.worker.postMessage({ type:"save", name: "totals", data: JSON.stringify(o) });
+    }
+};

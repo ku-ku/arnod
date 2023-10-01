@@ -27,3 +27,22 @@ export async function getexpences(id, d1, d2){
         throw res.error;
     }
 };
+
+export async function forscheduling(dt){
+    var dt = $moment(dt);
+    const res = await $jet.api({
+        url: `/vehicles/schedule`,
+        params: {
+            perPage: 1000,
+            columns: 'id,reg_number',
+            is_active:true,
+            start_date: dt.format('YYYY-MM-DD'),
+            end_date: dt.add('days', 1).format('YYYY-MM-DD')
+        }
+    });
+    if (res.success){
+        return res.result;
+    } else {
+        throw res.error;
+    }
+}   //forscheduling

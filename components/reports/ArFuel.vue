@@ -18,26 +18,26 @@
                   no-data-text="..."
                   return-object>
         <template v-slot:item.fuel_remains_period_start="{ item }">
-            {{ format(item.raw.fuel_remains_period_start, 0) }}
+            {{ format(item.fuel_remains_period_start, 0) }}
         </template>
         <template v-slot:item.fuel_remains_period_end="{ item }">
-            {{ format(item.raw.fuel_remains_period_end, 0) }}
+            {{ format(item.fuel_remains_period_end, 0) }}
         </template>
         <template v-slot:item.refueled_for_period="{ item }">
-            <v-chip v-if="item.raw.bad_fuel" color="red-accent-4">
-                {{ format(item.raw.refueled_for_period, 0) || '' }}
-                &nbsp;<small>({{ format(item.raw.consumption, 0) }} )</small>
+            <v-chip v-if="item.bad_fuel" color="red-accent-4">
+                {{ format(item.refueled_for_period, 0) || '' }}
+                &nbsp;<small>({{ format(item.consumption, 0) }} )</small>
             </v-chip>
             <template v-else>
-                {{ item.raw.total ? item.raw.refueled_for_period : format(item.raw.refueled_for_period, 0) }}
+                {{ item.total ? item.refueled_for_period : format(item.refueled_for_period, 0) }}
             </template>
         </template>
         <template v-slot:item.odometer="{ item }">
-            <v-chip v-if="item.raw.bad_odm" color="red-accent-4">
-                {{ format(item.raw.odometer, 0) }}
+            <v-chip v-if="item.bad_odm" color="red-accent-4">
+                {{ format(item.odometer, 0) }}
             </v-chip>
             <template v-else>
-                {{ item.raw.total ? item.raw.odometer : format(item.raw.odometer, 0) }}
+                {{ item.total ? item.odometer : format(item.odometer, 0) }}
             </template>
         </template>
     </v-data-table>

@@ -18,34 +18,34 @@
                       no-data-text="..."
                       return-object>
             <template v-slot:item.driver="{ item }">
-                <div v-if="/^(итог)+/i.test(item.raw.driver)" class="font-weight-bold">
-                    {{item.raw.driver}}
+                <div v-if="/^(итог)+/i.test(item.driver)" class="font-weight-bold">
+                    {{item.driver}}
                 </div>    
                 <div v-else class="d-flex align-center justify-space-between w-100">    
-                    {{item.raw.driver}}
-                    <v-icon v-if="(item.raw.profit2 >= 50)" color="primary">
+                    {{item.driver}}
+                    <v-icon v-if="(item.profit2 >= 50)" color="primary">
                         mdi-hand-pointing-up
                     </v-icon>
-                    <v-icon v-else-if="(item.raw.profit2)&&(item.raw.profit2 < 50)" color="warning">
+                    <v-icon v-else-if="(item.profit2)&&(item.profit2 < 50)" color="warning">
                         mdi-hand-pointing-down
                     </v-icon>
                 </div>    
             </template>
             <template v-slot:item.gross="{ item }">
-                {{ format(item.raw.gross, 0) }}
+                {{ format(item.gross, 0) }}
             </template>
             <template v-slot:item.gross_tonne="{ item }">
-                {{ format(item.raw.gross_tonne, 0) }}
+                {{ format(item.gross_tonne, 0) }}
             </template>
             <template v-slot:item.expenses="{ item }">
-                {{ format(item.raw.expenses, 0) }}
+                {{ format(item.expenses, 0) }}
             </template>
             <template v-slot:item.profit="{ item }">
-                <v-chip v-if="item.raw.profit < 0" color="red-accent-4">
-                    {{ format(item.raw.profit, 0) }}
+                <v-chip v-if="item.profit < 0" color="red-accent-4">
+                    {{ format(item.profit, 0) }}
                 </v-chip>
                 <template v-else>
-                    {{ format(item.raw.profit, 0) }}
+                    {{ format(item.profit, 0) }}
                 </template>
             </template>
         </v-data-table>
@@ -79,10 +79,11 @@ import { onUnmounted } from "vue";
 
 const _HDRS = [
     {title: 'водитель',     key: 'driver',     sortable: true, fixed: true, width: 130},
-    {title: 'вал ₽',        key: 'gross',      sortable: true, width: 100},
+    {title: 'вал ₽',        key: 'gross',      sortable: true, width: 85},
     {title: 'вал тонно-км', key: 'gross_tonne',sortable: true, width: 100},
-    {title: 'расходы',      key: 'expenses',   sortable: true, width: 100},
-    {title: 'прибыль',      key: 'profit',     sortable: true, width: 100}
+    {title: 'рейсов',       key: 'trips',      sortable: true, width: 50},
+    {title: 'расходы',      key: 'expenses',   sortable: true, width: 50},
+    {title: 'прибыль',      key: 'profit',     sortable: true, width: 50}
 ];
 
 export default {
@@ -164,6 +165,7 @@ export default {
                     gross_tonne: 0,
                     expenses: 0,
                     profit: 0,
+                    trips: 0,
                     valid: true
                 };
                 let profits = [], expenses = [], gross = [];
@@ -178,6 +180,7 @@ export default {
                     totals.gross_tonne += Number(r.gross_tonne);
                     totals.expenses    += Number(r.expenses);
                     totals.profit      += Number(r.profit);
+                    totals.trips       += Number(r.trips);
                     if (
                             ( r.gross )
                          && ( r.gross > 0)

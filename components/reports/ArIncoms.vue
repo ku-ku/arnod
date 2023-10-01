@@ -18,47 +18,47 @@
                   no-data-text="..."
                   return-object>
         <template v-slot:item.daily="{ item }">
-            {{ format(item.raw.daily, 0) }}
+            {{ format(item.daily, 0) }}
         </template>
         <template v-slot:item.tonne_km="{ item }">
-            {{ format(item.raw.tonne_km, 0) }}
+            {{ format(item.tonne_km, 0) }}
         </template>
         <template v-slot:item.immobility="{ item }">
-            {{ format(item.raw.immobility, 0) }}
+            {{ format(item.immobility, 0) }}
         </template>
         <template v-slot:item.total_income_period="{ item }">
             <v-btn size="small"
                    variant="text" 
                    class="text-decoration-underline"
-                   v-on:click="dodetails(item.raw)">
-                {{ format(item.raw.total_income_period, 0) }}
+                   v-on:click="dodetails(item)">
+                {{ format(item.total_income_period, 0) }}
             </v-btn>
         </template>
         <template v-slot:item.total_payed="{ item }">
-                {{ format(item.raw.total_payed, 0) }}
+                {{ format(item.total_payed, 0) }}
         </template>
         <template v-slot:item.prepayment="{ item }">
-            {{ format(item.raw.prepayment, 0) }}
+            {{ format(item.prepayment, 0) }}
         </template>
         <template v-slot:item.inventory_items="{ item }">
-            {{ format(item.raw.inventory_items, 0) }}
+            {{ format(item.inventory_items, 0) }}
         </template>
         <template v-slot:item.penalty="{ item }">
-            {{ format(item.raw.penalty, 0) }}
+            {{ format(item.penalty, 0) }}
         </template>
         <template v-slot:item.bonus="{ item }">
-            {{ format(item.raw.bonus, 0) }}
+            {{ format(item.bonus, 0) }}
         </template>
         <template v-slot:item.fuel_economy_income="{ item }">
-            <v-chip v-if="item.raw.fuel_economy_income < 0" color="red-accent-4">
-                {{ format(item.raw.fuel_economy_income, 0) }}
+            <v-chip v-if="item.fuel_economy_income < 0" color="red-accent-4">
+                {{ format(item.fuel_economy_income, 0) }}
             </v-chip>
             <template v-else>
-                {{ format(item.raw.fuel_economy_income, 0) }}
+                {{ format(item.fuel_economy_income, 0) }}
             </template>
         </template>
         <template v-slot:item.total="{ item }">
-                {{ format(item.raw.total, 0) }}
+                {{ format(item.total, 0) }}
         </template>
     </v-data-table>
     <v-alert v-if="!pending"

@@ -35,7 +35,7 @@
                             hide-default-footer
                             no-data-text="...">
                     <template v-slot:item.cost_original="{ item }">
-                        {{ format(item.raw.cost_original, 2) }}
+                        {{ format(item.cost_original, 2) }}
                     </template>    
                 </v-data-table>
             </v-card-text>

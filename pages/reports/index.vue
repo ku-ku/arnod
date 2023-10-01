@@ -150,7 +150,7 @@ export default {
     },
     data(){
         return {
-            report: 1,
+            report: 0,
             _REP_COMPS,
             error: null
         };

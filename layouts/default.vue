@@ -1,34 +1,45 @@
 <template>
     <v-app>
         <NuxtLoadingIndicator />
-        <v-app-bar color="white"
-                   elevation="1"
+        <v-app-bar elevation="1"
                    density="compact"
-                   >
+                   color="white">
             <template v-slot:prepend>
                 <v-btn v-if="has('back')"
                        icon="mdi-chevron-left"
-                       to='/'>
+                       v-on:click='$router.go(-1)'>
                 </v-btn>    
                 <v-app-bar-nav-icon v-else
                                     v-on:click.stop="drawer = !drawer">
                 </v-app-bar-nav-icon>
                 <div class="ar-title" v-html="title"></div>
             </template>
-            <div id="bar-free"></div>
-            <template v-if="has('subject') && has('driver')">
-                <ar-income />
+            <div id="ar-tb__prepend"></div>
+            <template v-if="has('subject')">
+                <template v-if="has('driver')">
+                    <ar-income />
+                    <v-btn icon="mdi-reload"
+                           flat
+                           v-on:click="reload">
+                    </v-btn>
+                </template>
+                <template v-if="has('chief')">
+                    <template v-if="has('page-index')">
+                    </template>
+                    <template v-else>
+                        <ar-period v-on:period="setperiod" />
+                        <v-btn icon="mdi-reload"
+                               flat
+                               v-on:click="reload">
+                        </v-btn>
+                    </template>
+                </template>
             </template>
-            <template v-if="has('subject') && has('chief')">
-                <ar-period v-on:period="setperiod" />
-            </template>
-            <v-btn icon="mdi-reload"
-                   flat
-                   v-on:click="reload">
-            </v-btn>
+            <div id="ar-tb__append"></div>
         </v-app-bar>
         <v-main>
-            <v-container :class="{'pa-0': has('page-order')}">
+            <v-container :class="{'pa-0': has('page-order')}"
+                         :fluid="has('page-company-trips')">
                 <slot />
             </v-container>
             <app-msg />
@@ -99,15 +110,22 @@ export default {
                     return s;
                 }
             }
+        },
+        ui(){
+            return all.ui;
         }
     },
     methods: {
         has(q){
             switch(q){
+                case "page-index":
+                    return ("index"===useRoute().name);
                 case "page-order":
                     return /(orders)+/.test(useRoute().name);
                 case "page-salary":
                     return /^(salary)+/.test(useRoute().name);
+                case "page-company-trips":
+                    return /^(company-trips)+/.test(useRoute().name);
                 case "back":
                     return !(/^(index)+/.test(useRoute().name));
                 case "subject":
@@ -121,6 +139,7 @@ export default {
         },
         reload(){
             $jet.isHydrating = false;   //TODO: (?)
+            all.set({at: (new Date()).getTime()});
             if ( this.has("page-salary") ){
                 refreshNuxtData('salary');
             } else {
@@ -143,7 +162,7 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
     .v-footer {
         font-size: 0.75rem;
     }
