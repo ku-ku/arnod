@@ -124,7 +124,9 @@
                 <v-list class="ar-nav">
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-order-bool-ascending-variant"
-                                 title="заказы"></v-list-item>
+                                 title="заказы"
+                                 subtitle="логист"
+                                 :to="{name: 'company-orders'}"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-truck-fast-outline"
                                  :to="{name: 'company-trips'}"

@@ -6,7 +6,8 @@
                 v-model="menu">
             <template v-slot:activator="{ props }">
                 <v-btn append-icon="mdi-chevron-down"
-                       flat
+                       variant="tonal"
+                       color="primary"
                        class="mr-3"
                        v-bind="props">
                     {{ direction }}
@@ -24,7 +25,7 @@
                      v-on:trip="onmodify" />
     </teleport>
     <v-data-table density="compact"
-                  class="ar-trips"
+                  class="ar-trips no-footer"
                   :loading="pending"
                   :items="trips"
                   items-per-page="-1"
@@ -113,18 +114,16 @@ export default {
               trips = ref([]);
 
         definePageMeta({
-            key: 'ordersPage',
+            key: 'tripsPage',
             keepalive: true
         });
         
-        const at = computed( ()=>all.at ); //for reloading
-        
-        console.log('order', order);
         
         useHead({
-            title: order.value ? `${ order.value.order.number }}. ${ order.value.order.move_direction?.title} ` : "Заказы"
+            title: order.value ? `${ order.value.order.number }}. ${ order.value.order.move_direction?.title} ` : "Рейсы"
         });
         
+        const at = computed( ()=>all.at ); //for reloading
         const { pending, error } = useAsyncData('company-order_trips', async ()=>{
             if (!order.value){
                 trips.value = [];
@@ -258,7 +257,6 @@ export default {
         }
     }
     .ar-trips{
-        font-size: 0.85rem;
         & tr {
             & th, & th span, & td {
                 white-space: nowrap;
@@ -283,17 +281,6 @@ export default {
                 & td:nth-child(6), & td:nth-child(8){
                     text-align: right;
                 }
-            }
-        }
-        & .v-data-table{
-            &__selected{
-                & td{
-                    background: #FFFDE7 !important;
-                    border-bottom: 1px solid #FFB300 !important;
-                }
-            }
-            &-footer{
-                display: none;
             }
         }
         &_add {

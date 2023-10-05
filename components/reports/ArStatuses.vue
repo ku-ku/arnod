@@ -3,14 +3,14 @@
                   class="ar-statuses"
                   disable-sort
                   no-filter
-                  height="100%"
+                  :fixed-header="true"
+                  height="calc(100vh - 186px)"
                   hover
                   :headers="headers"
                   :items="items"
                   :items-per-page="-1"
                   :loading="pending"
                   single-select
-                  sticky
                   disable-pagination
                   hide-default-footer
                   no-data-text="...">
@@ -55,6 +55,8 @@
                                     :key="'tota-' + n">
                     <v-chip :color="t.color"
                             :prepend-icon="t.ico"
+                            pill
+                            size="small"
                             class="mr-3">
                         <v-badge :content="t.n"
                                  inline

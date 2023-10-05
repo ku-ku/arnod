@@ -47,9 +47,8 @@
                                     <div v-if="Number(loading.loaded) > 0"
                                          class="text-right">
                                         {{ loading.loaded }}
-                                        <span class="pc" v-if="loading.pcloaded"
-                                              :style="{color: (loading.pcloaded > 0) ? 'red' : 'orange'}">
-                                            ({{ loading.pcloaded }}%)
+                                        <span class="pc" v-if="loading.pcloaded">
+                                            ({{o.pcloaded > 0 ? "+" : ""}} {{ loading.pcloaded }}%)
                                         </span>
                                     </div>    
                                 </h4>

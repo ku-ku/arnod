@@ -39,7 +39,7 @@
         </v-app-bar>
         <v-main>
             <v-container :class="{'pa-0': has('page-order')}"
-                         :fluid="has('page-company-trips')">
+                         :fluid="has('fluid')">
                 <slot />
             </v-container>
             <app-msg />
@@ -117,17 +117,21 @@ export default {
     },
     methods: {
         has(q){
+            let page = useRoute().name;
             switch(q){
+                case "fluid":
+                    return /^(company-trips)+/.test(page)
+                        || /^(company-orders)+/.test(page);
                 case "page-index":
-                    return ("index"===useRoute().name);
+                    return ("index"===page);
                 case "page-order":
-                    return /(orders)+/.test(useRoute().name);
+                    return /(orders)+/.test(page);
                 case "page-salary":
-                    return /^(salary)+/.test(useRoute().name);
+                    return /^(salary)+/.test(page);
                 case "page-company-trips":
-                    return /^(company-trips)+/.test(useRoute().name);
+                    return /^(company-trips)+/.test(page);
                 case "back":
-                    return !(/^(index)+/.test(useRoute().name));
+                    return !(/^(index)+/.test(page));
                 case "subject":
                     return getProfile("has-subject");
                 case "driver":

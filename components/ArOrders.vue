@@ -47,9 +47,8 @@
                     </v-col>
                     <v-col class="text-right">
                         {{ o.loaded }}
-                        <span class="pc" v-if="o.pcloaded"
-                              :style="{color: (o.pcloaded > 0) ? 'red' : 'orange'}">
-                            ({{ o.pcloaded }}%)
+                        <span class="pc" v-if="o.pcloaded">
+                            ({{o.pcloaded > 0 ? "+" : ""}} {{ o.pcloaded }}%)
                         </span>
                     </v-col>    
                 </v-row>

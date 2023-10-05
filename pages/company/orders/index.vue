@@ -1,0 +1,181 @@
+<template>
+    <v-data-table-server density="compact"
+                  class="ar-orders"
+                  :loading="pending"
+                  :items="orders"
+                  :items-length="pages.total"
+                  :headers="hdrs"
+                  :fixed-header="true"
+                  :fixed-footer="true"
+                  :sticky="true"
+                  hover
+                  item-key="id"
+                  select-strategy="single"
+                  :model-value="selected"
+                  v-on:click:row="onclickrow"
+                  v-on:update:options="onoptions"
+                  height="calc(100vh - 172px)">
+        <template v-slot:top>
+            <v-tabs v-model="tab"
+                    density="compact"            
+                    color="primary">
+                <v-tab :value="0">На модерации</v-tab>
+                <v-tab :value="1">На исполнении</v-tab>
+                <v-tab :value="2">Закрытые</v-tab>
+                <v-tab :value="3">Завершенные</v-tab>
+            </v-tabs>
+        </template>
+        <template v-slot:item.actions="{ item }">
+            <v-btn size="x-small" flat icon="mdi-pencil"
+                   v-on:click="onorder(item)"></v-btn>
+        </template>    
+    </v-data-table-server>
+    <teleport to="body">
+        <ar-company-order ref="dlg" 
+                     v-on:order="onmodify" />
+    </teleport>
+    
+</template>
+<script>
+import { profile } from "app-ext/composables/profile";
+import { getorders } from "~/services/orders";
+import { all } from "~/composables/data";
+import ArCompanyOrder from "~/components/ArCompanyOrder";
+
+const _HDRS = [
+    {title: 'Дата', key: 'at', sortable: false},
+    {title: '№', key: 'number', sortable: true},
+    {title: 'Маршрут', key: 'move_direction.title', sortable: false},
+    {title: 'Расстояние', key: 'move_direction.distance', sortable: false},
+    {title: 'Груз', key: 'cargo_name.title', sortable: false},
+    {title: 'Кол-во', key: 'cargo_units_count', sortable: false},
+    {title: 'Остаток', key: 'cargo_units_count_left', sortable: false},
+    {title: 'Ед.изм', key: 'cargo_unit.title', sortable: false},
+    {title: 'Стоимость', key: 'price', sortable: false},
+    {title: 'Стоимость с НДС', key: 'price_vat', sortable: false},
+    {title: 'Примечания', key: 'comment', sortable: false},
+    {title: ' ', key: 'actions', sortable: false}
+];
+    
+export default {
+    name: 'ArCompanyOrdersPage',
+    components: {
+        ArCompanyOrder
+    },
+    async setup(){
+        definePageMeta({
+            key: 'ordersPage',
+            keepalive: true
+        });
+        useHead({
+            title: "Заказы"
+        });
+        
+        
+        const tab = ref(0),
+              pages = ref({
+                  page: 1,
+                  perPage: 10,
+                  orders: [],
+                  total: 0,
+                  sort: []
+              }),
+              orders = ref([]);
+        const at = computed( ()=>all.at ); //for reloading
+    
+        const { pending, error } = useAsyncData('company-orders', async ()=>{
+            const params = {
+                page: pages.value.page,
+                perPage: pages.value.perPage,
+                filters: 'status:on_moderate',
+                orders:  '-loading_start_date'
+            };
+            switch (tab.value){
+                case 0:
+                    params.filters = 'status:on_moderate';
+                    break;
+                case 1:
+                    params.filters = 'status:opened_bids';
+                    break;
+                case 2:
+                    params.filters = 'status:closed_bids';
+                    break;
+                case 3:
+                    params.filters = 'status:completed';
+                    break;
+            }
+            if (pages.value.sort.length > 0){
+                params.orders = pages.value.sort.map( s => {
+                    return `${ "asc"===s.order ? "" : "-" }${ s.key }`;
+                }).join(",");
+            } 
+            const res = await getorders(params);
+            if ( res.success ){
+                orders.value = res.result.items;
+                pages.value.total = res.result.total;
+                console.log('orders', orders);
+            } else {
+                throw {message: res.error};
+            }
+            return true;
+        }, {
+            watch: [tab, at]
+        });
+        
+        return {
+            tab,
+            pages,
+            hdrs: _HDRS,
+            orders,
+            pending, 
+            error
+        };
+    },
+    data(){
+        return {
+            selected: []
+        };
+    },
+    methods: {
+        onoptions(opts){
+            this.pages.page = opts.page;
+            this.pages.perPage = opts.itemsPerPage;
+            this.pages.sort = opts.sortBy;
+            refreshNuxtData('company-orders');
+        },
+        onclickrow(e, {item}){
+            this.selected = [item.id];
+            $('.ar-orders table tr.v-data-table__selected').removeClass('v-data-table__selected');
+            $(e.target).closest('tr').addClass('v-data-table__selected');
+        },
+        onorder(o){
+            this.$refs["dlg"].open(o);
+        },
+        onmodify(order){
+            
+        }
+    }
+}    
+</script>
+<style lang="scss">
+    .ar-orders{
+        & table {
+            & tr {
+                & td {
+                    &:nth-child(2), 
+                    &:nth-child(4), 
+                    &:nth-child(6),
+                    &:nth-child(7),
+                    &:nth-child(9),
+                    &:nth-child(10){
+                        text-align: right;
+                    }
+                    &:nth-child(11){
+                        max-width: 20rem;
+                    }
+                    
+                }
+            }
+        }
+    }
+</style>
