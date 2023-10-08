@@ -132,8 +132,10 @@ export default {
                     
                     r.status = status?.title || '';
                     
-                    
-                    if ( /^(загру)+.*(назна)+/i.test(r.status) ){
+                    if ( /^(нет)+\s*(сцепки)+/i.test(r.status) {
+                        r.ico = "mdi-truck-minus-outline";
+                        r.bad = true;
+                    } else if ( /^(загру)+.*(назна)+/i.test(r.status) ){
                         r.status = 'з/назн.';
                         r.ico = "mdi-clock-alert-outline";
                         r.color = "blue";

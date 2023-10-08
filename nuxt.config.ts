@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     css: [
         'vuetify/lib/styles/main.sass',
         '~/assets/index.scss',
+        'app-ext/app.scss'
     ],
     runtimeConfig: {
         public: {

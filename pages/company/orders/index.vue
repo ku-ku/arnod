@@ -25,6 +25,11 @@
                 <v-tab :value="3">Завершенные</v-tab>
             </v-tabs>
         </template>
+        <template v-slot:item.move_direction.title="{ item }">
+            <a href="#"
+               class="ar-order__link"
+               v-on:click.stop.="onorder(item)">{{ item.move_direction.title }}</a>
+        </template>    
         <template v-slot:item.actions="{ item }">
             <v-btn size="x-small" flat icon="mdi-pencil"
                    v-on:click="onorder(item)"></v-btn>
@@ -32,9 +37,8 @@
     </v-data-table-server>
     <teleport to="body">
         <ar-company-order ref="dlg" 
-                     v-on:order="onmodify" />
+                     v-on:success="onmodify" />
     </teleport>
-    
 </template>
 <script>
 import { profile } from "app-ext/composables/profile";
@@ -152,7 +156,14 @@ export default {
             this.$refs["dlg"].open(o);
         },
         onmodify(order){
-            
+            getorders({filters:`id:${order.id}`,page:1,perPage:1}).then( res => {
+                if (res.success){
+                    const o = res.result.items.at(0);
+                    this.selected = [ o ];
+                    let n = this.orders.findIndex( _o => _o.id === o.id );
+                    this.orders.splice(n, 1, o);
+                }
+            });
         }
     }
 }    
@@ -162,7 +173,9 @@ export default {
         & table {
             & tr {
                 & td {
-                    &:nth-child(2), 
+                    &:nth-child(2){
+                        text-align: center;
+                    }
                     &:nth-child(4), 
                     &:nth-child(6),
                     &:nth-child(7),
@@ -176,6 +189,11 @@ export default {
                     
                 }
             }
+        }
+    }
+    .ar-order{
+        &__link{
+            color: unset;
         }
     }
 </style>
