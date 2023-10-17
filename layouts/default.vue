@@ -12,7 +12,7 @@
                 <v-app-bar-nav-icon v-else
                                     v-on:click.stop="drawer = !drawer">
                 </v-app-bar-nav-icon>
-                <div class="ar-title" v-html="title"></div>
+                <div class="ar-title" id="ar-title" v-html="title"></div>
             </template>
             <div id="ar-tb__prepend"></div>
             <template v-if="has('subject')">
@@ -74,6 +74,7 @@
 <script>
 import { default as AppMsg } from "app-ext/components/AppMsg";
 import { profile, logout, get as getProfile } from "app-ext/composables/profile";
+import { getorders } from "~/services/orders";
 import { all } from "~/composables/data";
 import ArIncome from "~/components/ArIncome";
 import ArPeriod from "~/components/ArPeriod";
@@ -121,11 +122,12 @@ export default {
             switch(q){
                 case "fluid":
                     return /^(company-trips)+/.test(page)
-                        || /^(company-orders)+/.test(page);
+                        || /^(company-orders)+/.test(page)
+                        || /^(company-logistician)+/.test(page);
                 case "page-index":
                     return ("index"===page);
                 case "page-order":
-                    return /(orders)+/.test(page);
+                    return /(orders)+/.test(page) || /(logistician)+/.test(page);
                 case "page-salary":
                     return /^(salary)+/.test(page);
                 case "page-company-trips":

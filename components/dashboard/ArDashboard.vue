@@ -62,6 +62,16 @@
                                             транспорт
                                         </div>
                                     </v-chip>
+                                    <v-chip v-if="totals.vehicles.motodays"
+                                            prepend-icon="mdi-calendar-month-outline" 
+                                            size="large"
+                                            label
+                                            color="primary">
+                                        <div><b>{{ totals.vehicles.motodays.pc }}</b>%</div>
+                                        <div class="text-muted">
+                                            мотодни: {{ totals.vehicles.motodays.all }} / {{ totals.vehicles.motodays.idle }}
+                                        </div>
+                                    </v-chip>
                                     <v-chip prepend-icon="mdi-kettlebell" 
                                             size="large"
                                             label
@@ -122,11 +132,16 @@
         <v-row justify="center">
             <v-col cols="12" sm="8">
                 <v-list class="ar-nav">
+                    <v-list-item append-icon="mdi-chevron-right"
+                                 prepend-icon="mdi-face-agent"
+                                 title="заказы"
+                                 subtitle="коммерсант"
+                                 :to="{name: 'company-orders'}"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-order-bool-ascending-variant"
                                  title="заказы"
                                  subtitle="логист"
-                                 :to="{name: 'company-orders'}"></v-list-item>
+                                 :to="{name: 'company-logistician'}"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-truck-fast-outline"
                                  :to="{name: 'company-trips'}"

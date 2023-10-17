@@ -194,11 +194,14 @@ export default {
         },  //_getLayer
         drawRoute(){
             if (this.coords.length < 1){
+                console.log('map: no coords for route', this.route);
                 return;
             }
             let line = this._getLayer("route-layer");
             let source = line.getSource();
-            if (!source){
+            if ( source ){
+                source.clear();
+            } else {
                 source = new VectorSource();
                 line.setSource(source);
             }

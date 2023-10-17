@@ -132,9 +132,11 @@ export default {
                     
                     r.status = status?.title || '';
                     
-                    if ( /^(нет)+\s*(сцепки)+/i.test(r.status) {
+                    if ( !(r.trailers?.length > 0) ){
                         r.ico = "mdi-truck-minus-outline";
+                        r.color = "#D50000";    //red
                         r.bad = true;
+                        r.status = 'нет сцепки';
                     } else if ( /^(загру)+.*(назна)+/i.test(r.status) ){
                         r.status = 'з/назн.';
                         r.ico = "mdi-clock-alert-outline";
@@ -159,14 +161,21 @@ export default {
                     } else if (/(ТО)+/.test(r.status) ){
                         r.status = "ТО";
                         r.ico = "mdi-engine-outline";
-                        r.color = "#FFC107"; //amber
+                        r.color = "#D50000";    //red
+                        r.bad   = true;
+                    } else if (/^(водит)+.*(не)+/i.test(r.status)) {
+                        r.ico = "mdi-account-off-outline";
+                        r.color = "#D50000";    //red
                         r.bad   = true;
                     }
-                    n = _totals.findIndex( t => t.status === r.status);
-                    if ( n < 0 ){
-                        _totals.push({status: r.status, n: 1, color: r.color, ico: r.ico, bad: r.bad});
-                    } else {
-                        _totals[n].n++;
+                    
+                    if (r.bad){ //bad only calculating
+                        n = _totals.findIndex( t => t.status === r.status);
+                        if ( n < 0 ){
+                            _totals.push({status: r.status, n: 1, color: r.color, ico: r.ico, bad: r.bad});
+                        } else {
+                            _totals[n].n++;
+                        }
                     }
                     
                     r.timeWork = '';

@@ -406,7 +406,6 @@ export default {
         },
         async save(){
             let { valid } = await this.$refs["order_form"].validate();
-            console.log('save', valid, this.$refs["order_form"]);
             if (!valid){
                 return false;
             }

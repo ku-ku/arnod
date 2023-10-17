@@ -1,8 +1,8 @@
 import { phpdate2m, date2php } from "app-ext/utils";
 
-export async function getorders(params){
+export async function getorders(params, logistics = true){
     const res = await $jet.api({
-        url: '/orders_moderate',
+        url: logistics ? '/orders_moderate' : '/orders',
         method: 'GET',
         params
     });
@@ -15,3 +15,11 @@ export async function getorders(params){
     }
     return res;
 };  //getorders
+
+export async function delorder(id){
+    const res = await $jet.api({
+        url: `/orders/${ id }`,
+        method: 'DELETE'
+    });
+    return res;
+};  //delorder

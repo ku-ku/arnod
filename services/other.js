@@ -12,9 +12,25 @@ export async function orderstatuses(){
 };   //orderstatuses
 
 const _REFS = {
+    contractors: {
+        url: '/contractors',
+        columns: 'id,title'
+    },
     routes: {
         url: '/refs/move_directions',
         columns: 'id,title,distance'
+    },
+    cargo_names: {
+        url: '/refs/cargo_names',
+        columns: 'id,title'
+    },
+    cargo_types: {
+        url: '/refs/cargo_type',
+        columns: 'id,title'
+    },
+    cargo_units: {
+        url: '/refs/cargo_unit',
+        columns: 'id,title'
     },
     paytypes: {
         url: '/refs/orders_payments_type',
@@ -31,18 +47,31 @@ const _REFS = {
     vehiunloading: {
         url: '/refs/vehicle_unloading_type',
         columns: 'id,title'
+    },
+    method_of_loading: {
+        url: '/refs/method_of_loading',
+        columns: 'id,title'
+    },
+    loading_points: {
+        url: '/loading_points',
+        columns: 'id,title,lat,lon',
+        orders:  'title'
+    },
+    unloading_points: {
+        url: '/unloading_points',
+        columns: 'id,title,lat,lon',
+        orders:  'title'
     }
 };
 
-export async function refs(q){
+export async function refs(q, params = null){
     const r = _REFS[q];
     if ( r ) {
+        var params = Object.assign({perPage: -1, columns: r.columns}, params || {});
         const res = await $jet.api({
             url: r.url,
-            params: {
-                perPage: -1,
-                columns: r.columns
-            }
+            key: q,
+            params
         });
         if (res.success){
             return res.result.items;

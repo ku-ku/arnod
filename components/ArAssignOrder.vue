@@ -17,16 +17,16 @@
                                           type="number"
                                           v-model="count"
                                           required
-                                          :hint="`Доступно ${order.cargo_units_count_left}`"
+                                          :hint="`Доступно ${ avail }`"
                                           persistent-hint>
                         </jet-input-number>
                     </v-col>
                     <v-col style="align-self: center;">
                         <v-btn size="small"
-                               color="primary"
                                variant="tonal"
+                               :color="(order.cargo_units_count_left > 0) ? 'primary' : 'orange'"
                                v-on:click.prevent="count = order.cargo_units_count_left">
-                               выдать максимум
+                               выдать максимум {{ avail }}
                         </v-btn>
                     </v-col>
                 </v-row>
@@ -129,6 +129,13 @@ export default {
             org_to: null
         };
     },
+    computed: {
+        avail(){
+            return (this.order?.cargo_units_count_left > 0) 
+                        ? `${ this.order.cargo_units_count_left } ${ this.order.cargo_unit?.title }` 
+                        : '';
+        }
+    },
     methods: {
         async ordering(){
             let { valid } = await this.$refs["form"].validate();
@@ -154,7 +161,7 @@ export default {
                 this.$emit("success");
             } catch(e){
                 console.log('ERR (assign)', e);
-                $jet.msg({text: `Не удалось назначить заказ:<br />${ e.message }`, color:'warning'});
+                $jet.msg({text: `Не удалось назначить заказ:<br />${ $jet.api.$errm }<br />${ e.message }`, color:'warning'});
             } finally {
                 this.pending = false;
             }

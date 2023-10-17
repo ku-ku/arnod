@@ -9,15 +9,8 @@
             <v-tab :value="3">Завершенные</v-tab>
         </v-tabs>
     </teleport>
-    <teleport to="#ar-tb__prepend">
-        <v-btn prepend-icon="mdi-plus"
-               variant="tonal"
-               color="primary"
-               class="ml-auto mr-3"
-               v-on:click="onorder(null)">новый</v-btn>
-    </teleport>
     <v-data-table-server density="compact"
-                  class="ar-corders"
+                  class="ar-lorders"
                   :loading="pending"
                   :items="orders"
                   :items-length="pages.total"
@@ -28,35 +21,32 @@
                   hover
                   item-key="id"
                   select-strategy="single"
-                  return-object
-                  :items-per-page="25"
                   :model-value="selected"
-                  height="calc(100vh - 178px)"
+                  return-object
                   v-on:click:row="onclickrow"
-                  v-on:update:options="onoptions">
+                  v-on:update:options="onoptions"
+                  :items-per-page="25"
+                  height="calc(100vh - 178px)">
         <template v-slot:item.move_direction.title="{ item }">
             <a href="#"
                class="ar-order__link"
-               :data-item-id="item.id"
-               v-on:click.stop.prevent="onorder(item)">{{ item.move_direction.title }}</a>
+               v-on:click.stop.="onorder(item)">{{ item.move_direction.title }}</a>
         </template>    
         <template v-slot:item.actions="{ item }">
-            <v-btn size="x-small" 
-                   flat 
-                   icon="mdi-close"
-                   v-on:click="delorder(item)"></v-btn>
+            <v-btn size="x-small" flat icon="mdi-pencil"
+                   v-on:click="onorder(item)"></v-btn>
         </template>    
     </v-data-table-server>
     <teleport to="body">
-        <ar-request ref="dlg" 
-                    v-on:success="onmodify" />
+        <ar-logi-order ref="dlg" 
+                     v-on:success="onmodify" />
     </teleport>
 </template>
 <script>
 import { profile } from "app-ext/composables/profile";
+import { getorders } from "~/services/orders";
 import { all } from "~/composables/data";
-import { getorders, delorder } from "~/services/orders";
-import ArRequest from "~/components/ArRequest";
+import ArLogiOrder from "~/components/ArLogiOrder";
 
 const _HDRS = [
     {title: 'Дата', key: 'at', sortable: false},
@@ -65,26 +55,28 @@ const _HDRS = [
     {title: 'Расстояние', key: 'move_direction.distance', sortable: false},
     {title: 'Груз', key: 'cargo_name.title', sortable: false},
     {title: 'Кол-во', key: 'cargo_units_count', sortable: false},
+    {title: 'Остаток', key: 'cargo_units_count_left', sortable: false},
     {title: 'Ед.изм', key: 'cargo_unit.title', sortable: false},
     {title: 'Стоимость', key: 'price', sortable: false},
     {title: 'Стоимость с НДС', key: 'price_vat', sortable: false},
     {title: 'Примечания', key: 'comment', sortable: false},
-    {title: ' ', key: 'actions', sortable: false, align: 'center'}
+    {title: ' ', key: 'actions', sortable: false}
 ];
-
+    
 export default {
-    name: 'ArCompanyOrdersPage',
+    name: 'ArCompanyLogisticianPage',
     components: {
-        ArRequest
+        ArLogiOrder
     },
     async setup(){
         definePageMeta({
-            key: 'ordersPage',
+            key: 'logisticianPage',
             keepalive: true
         });
         useHead({
-            title: "Заказы (коммерсант)"
+            title: "Заказы (логист)"
         });
+        
         
         const tab = ref(0),
               pages = ref({
@@ -96,8 +88,8 @@ export default {
               }),
               orders = ref([]);
         const at = computed( ()=>all.at ); //for reloading
-        
-        const { pending, error } = useAsyncData('company-orders', async ()=>{
+    
+        const { pending, error } = useAsyncData('logistic-orders', async ()=>{
             const params = {
                 page: pages.value.page,
                 perPage: pages.value.perPage,
@@ -123,7 +115,7 @@ export default {
                     return `${ "asc"===s.order ? "" : "-" }${ s.key }`;
                 }).join(",");
             } 
-            const res = await getorders(params, false);
+            const res = await getorders(params);
             if ( res.success ){
                 orders.value = res.result.items;
                 pages.value.total = res.result.total;
@@ -136,7 +128,6 @@ export default {
             watch: [tab, at]
         });
         
-        
         return {
             tab,
             pages,
@@ -145,7 +136,6 @@ export default {
             pending, 
             error
         };
-        
     },
     data(){
         return {
@@ -157,66 +147,32 @@ export default {
             this.pages.page = opts.page;
             this.pages.perPage = opts.itemsPerPage;
             this.pages.sort = opts.sortBy;
-            refreshNuxtData('company-orders');
+            refreshNuxtData('logistic-orders');
         },
         onclickrow(e, {item}){
             this.selected = [item];
-            $('.ar-corders table tr.v-data-table__selected').removeClass('v-data-table__selected');
+            $('.ar-lorders table tr.v-data-table__selected').removeClass('v-data-table__selected');
             $(e.target).closest('tr').addClass('v-data-table__selected');
         },
         onorder(o){
-            console.log('modify', o);
+            this.selected = [o];
             this.$refs["dlg"].open(o);
         },
         onmodify(order){
-            getorders({filters:`id:${order.id}`,page:1,perPage:1}, false).then( res => {
+            getorders({filters:`id:${order.id}`,page:1,perPage:1}).then( res => {
                 if (res.success){
                     const o = res.result.items.at(0);
                     this.selected = [ o ];
                     let n = this.orders.findIndex( _o => _o.id === o.id );
-                    if ( n < 0 ){
-                        this.orders.splice(0, 0, o);
-                    } else {
-                        this.orders.splice(n, 1, o);
-                    }
-                    this.$nextTick(()=>{
-                        $(`.ar-order__link[data-item-id=${o.id}]`).parent().trigger('click');
-                    });
+                    this.orders.splice(n, 1, o);
                 }
-            });
-        },
-        delorder(order){
-            $jet.msg({
-                text: `<b>Подтвердите удаление заказа</b><br />№${ order.number }. ${ order.move_direction.title }`,
-                color: 'indigo',
-                click: ok => {
-                    if ( !ok ){
-                        return;
-                    }
-                    delorder(order.id).then( res => {
-                        if (res.success){
-                            let n = this.orders.findIndex( t => (t.id === order.id) );
-                            if ( n > -1 ){
-                                this.orders.splice(n, 1);
-                            }
-                        }
-                    }).catch( e => {
-                        console.log('ERR (del)', e);
-                        $jet.msg({
-                            text: `Ошибка удаления заказа:<br />${ $jet.api.$errm || e.message }`, 
-                            color: 'warning'
-                        });
-                    });
-                },
-                click_title: 'удалить',
-                timeout: 60000
             });
         }
     }
-}
+}    
 </script>
 <style lang="scss">
-    .ar-corders{
+    .ar-lorders{
         & table {
             & tr {
                 & td {
@@ -225,7 +181,7 @@ export default {
                     }
                     &:nth-child(4), 
                     &:nth-child(6),
-                    &:nth-child(8),
+                    &:nth-child(7),
                     &:nth-child(9),
                     &:nth-child(10){
                         text-align: right;
