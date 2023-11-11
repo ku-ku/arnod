@@ -11,7 +11,8 @@
         </v-toolbar>
         <v-form ref="form"
                 v-on:submit.stop.prevent="save">
-            <v-card rounded="0">
+            <v-card rounded="0"
+                    :loading="pending">
                 <v-card-text class="pb-5">
                     <v-row>
                         <v-col cols="12" class="text-h6">
@@ -69,7 +70,6 @@
                                           v-model="trip.cargo_count"
                                           type="currency"
                                           clearable
-                                          required
                                           persistent-hint
                                           density="compact"
                                           name="cargo_count"
@@ -80,7 +80,6 @@
                             <jet-input-number label="Расстояние"
                                           v-model="trip.distance"
                                           type="integer"
-                                          required
                                           clearable
                                           density="compact"
                                           :hint="defs('distance')"
@@ -92,7 +91,6 @@
                             <jet-input-number label="Ставка"
                                           type="currency"
                                           v-model="trip.price"
-                                          required
                                           clearable
                                           density="compact"
                                           :hint="defs('price')"
@@ -158,7 +156,7 @@ const _DEFS = {
     end: null,
     vehicle_id: null,
     driver_id: null,
-    cargo_count: null,
+    cargo_count: 0,
     distance: null,
     price: null,
     loaded: null,
@@ -267,7 +265,7 @@ export default {
                 case 'distance':
                     return this.order ? `${this.order.move_direction?.distance} км.` : null;
                 case 'cargo_count':
-                    return this.order ? `доступно ${Number(this.order.cargo_units_count).toFixed(1) - Number(this.order.distributed_cargo_count).toFixed(1)}` : null;
+                    return this.order ? `доступно ${Number(this.order.cargo_units_count-this.order.distributed_cargo_count).toFixed(1)}` : null;
             }
             return null;
         },

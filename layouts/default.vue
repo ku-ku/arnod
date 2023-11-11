@@ -48,7 +48,17 @@
                   border>
             <div class="jet-hint"></div>
             <v-spacer />
-            {{tenant?.title || ''}}
+            <v-tooltip text="обработка персональных данных">
+                <template v-slot:activator="{ props }">
+                    <v-btn size="x-small" 
+                           v-bind="props"
+                           style="margin: -8px 0;"
+                           flat
+                           icon="mdi-information-outline"
+                           href="https://web.arnod.ru/privacy/" target="_blank">
+                    </v-btn>
+                </template>
+            </v-tooltip>    
         </v-footer>
         <v-navigation-drawer v-model="drawer"
                              temporary
@@ -123,7 +133,8 @@ export default {
                 case "fluid":
                     return /^(company-trips)+/.test(page)
                         || /^(company-orders)+/.test(page)
-                        || /^(company-logistician)+/.test(page);
+                        || /^(company-logistician)+/.test(page)
+                        || /^(company-finance)+/.test(page);
                 case "page-index":
                     return ("index"===page);
                 case "page-order":

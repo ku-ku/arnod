@@ -7,6 +7,12 @@ html, body {
     font-size: 0.666rem;
 }
 
+.v-badge.empty {
+    & .v-badge__badge{
+        display: none !important;
+    }
+}
+
 .v-data-table {
     $border-color: #d5cdb5;
     &.v-table--fixed-header > .v-table__wrapper > table > thead{

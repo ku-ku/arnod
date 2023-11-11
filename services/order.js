@@ -47,7 +47,7 @@ export async function getorderhst(filters){
     if (res.success){
         const now = new Date();
         res.result.items.forEach( item => {
-            item.at = phpdate2m(item.end_date).format('DD.MM.YYYY');
+            item.at = phpdate2m(item.start_date).format('DD.MM.YYYY');
             item.driver = item.driver?.user?.full_name;
             item.diffCapacity = 0;
             item.loaded = Number(item.loaded);

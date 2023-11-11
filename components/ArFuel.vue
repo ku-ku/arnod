@@ -98,6 +98,7 @@ export default {
             try {
                 params.vehicle = {id: this.vehicle.id};
                 params.user_id = profile.subject.id;
+                params.id = 0;
                 let res = await $jet.api({
                     url: this.full ? '/refills' : '/fuel',
                     key: this.full ? 'refills' : 'fuel',

@@ -4,7 +4,7 @@
                   disable-sort
                   no-filter
                   :fixed-header="true"
-                  height="calc(100vh - 186px)"
+                  height="calc(100vh - 146px)"
                   hover
                   :headers="headers"
                   :items="items"
@@ -53,14 +53,12 @@
             <v-slide-group class="ar-statuses__totals">
                 <v-slide-group-item v-for="(t, n) in totals"
                                     :key="'tota-' + n">
-                    <v-chip :color="t.color"
-                            :prepend-icon="t.ico"
+                    <v-chip :prepend-icon="t.ico"
                             pill
                             size="small"
                             class="mr-3">
                         <v-badge :content="t.n"
                                  inline
-                                 :color="t.color"
                                  :offset-x="30">
                             {{ t.status }}
                         </v-badge>

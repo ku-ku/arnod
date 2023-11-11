@@ -68,6 +68,11 @@
                 </v-tooltip>
             </template>    
         </template>    
+        <template v-slot:item.$vehicle="{ item }">
+            <a href="#" v-on:click.prevent="ontrip(item)">
+                {{ item.$vehicle }}
+            </a>
+        </template>
         <template v-slot:item.status="{ item }">
             {{ item.status }}
             <div v-if="item.dt" class="text-muted">
@@ -267,6 +272,9 @@ export default {
                 }
                 &:nth-child(6), &:nth-child(8){
                     max-width: 10rem;
+                }
+                & a{
+                    color: unset;
                 }
             }
             & th:first-child{

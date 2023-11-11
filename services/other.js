@@ -61,6 +61,26 @@ const _REFS = {
         url: '/unloading_points',
         columns: 'id,title,lat,lon',
         orders:  'title'
+    },
+    legals: {
+        url: '/refs/legal_entity',
+        columns: '*'
+    },
+    drivers: {
+        url: '/drivers',
+        columns: '*'
+    },
+    vehicles: {
+        url: '/vehicles',
+        columns: 'id,reg_number,legal_entity_id'
+    },
+    exp_types: {
+        url: '/expenses_types',
+        columns: '*'
+    },
+    vat_rates: {
+        url: '/refs/vat_rates',
+        columns: '*'
     }
 };
 

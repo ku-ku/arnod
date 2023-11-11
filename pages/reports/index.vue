@@ -1,102 +1,79 @@
 <template>
+    <teleport v-if="isMounted" to="#ar-title">
+        <v-menu>
+            <template v-slot:activator="{ props }">
+                <v-btn variant="tonal"
+                       color="primary"
+                       v-bind="props"
+                       flat
+                       append-icon="mdi-chevron-down">
+                    {{ activeTitle }}
+                </v-btn>
+            </template>
+            <v-list density="compact"
+                    v-on:update:selected="selReport">
+                <v-list-item :value="0"
+                    prepend-icon="mdi-chart-pie">
+                    Сводка
+                </v-list-item>
+                <v-list-item :value="1"
+                             prepend-icon="mdi-clock-check-outline">
+                    <v-badge inline
+                             color="green-lighten-5"
+                             :content="all[1].n"
+                             :class="{'empty': all[1].n==0}">
+                        Статусы
+                    </v-badge>
+                </v-list-item>    
+                <v-list-item :value="2"
+                             prepend-icon="mdi-truck-fast-outline">
+                    <v-badge inline
+                             color="green-lighten-5"
+                             :content="all[2].n"
+                             :class="{'empty': all[2].n==0}">
+                        По ТС
+                    </v-badge>
+                </v-list-item>    
+                <v-list-item :value="3"
+                             prepend-icon="mdi-account-cowboy-hat-outline">
+                    <v-badge inline
+                             color="green-lighten-5"
+                             :content="all[3].n"
+                             :class="{'empty': all[3].n==0}">
+                        По водителям
+                    </v-badge>
+                </v-list-item>
+                <v-list-item :value="4"
+                             prepend-icon="mdi-account-multiple-outline">
+                    <v-badge inline
+                             color="green-lighten-5"
+                             :content="all[4].n"
+                             :class="{'empty': all[4].n==0}">
+                        По контрагентам
+                    </v-badge>
+                </v-list-item>
+                <v-list-item :value="5"
+                             prepend-icon="mdi-gas-station-outline">
+                    <v-badge inline
+                             color="green-lighten-5"
+                             :content="all[5].n"
+                             :class="{'empty': all[5].n==0}">
+                        ГСМ
+                    </v-badge>
+                </v-list-item>
+                <v-list-item :value="6"
+                             prepend-icon="mdi-account-credit-card-outline">
+                    <v-badge inline
+                             color="green-lighten-5"
+                             :content="all[6].n"
+                             :class="{'empty': all[6].n==0}">
+                        Начисления
+                    </v-badge>
+                </v-list-item>
+            </v-list>
+        </v-menu>
+    </teleport>    
     <v-sheet class="ar-chief">
-        <v-toolbar density="compact" 
-                   flat 
-                   class="py-2 px-sm-3"
-                   absolute
-                   height="48"
-                   color="white"
-                   elevation="1">
-            <v-slide-group show-arrows
-                           mandatory
-                           selected-class="bg-primary"
-                           v-model="report">
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-chart-pie' : undefined"
-                           @click="toggle">Сводка</v-btn>
-                </v-slide-group-item>
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-clock-check-outline' : undefined"
-                           @click="toggle">
-                        <v-badge inline
-                                 color="green-lighten-5"
-                                 :content="all[1].n"
-                                 :class="{'empty': all[1].n==0}">
-                            Статусы
-                        </v-badge>
-                    </v-btn>
-                </v-slide-group-item>
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-truck-fast-outline' : undefined"
-                           @click="toggle">
-                        <v-badge inline
-                                 color="green-lighten-5"
-                                 :content="all[2].n"
-                                 :class="{'empty': all[2].n==0}">
-                            По ТС
-                        </v-badge>
-                    </v-btn>
-                </v-slide-group-item>
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-account-cowboy-hat-outline' : undefined"
-                           @click="toggle">
-                        <v-badge inline
-                                 color="green-lighten-5"
-                                 :content="all[3].n"
-                                 :class="{'empty': all[3].n==0}">
-                            По водителям
-                        </v-badge>
-                    </v-btn>
-                </v-slide-group-item>
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-account-multiple-outline' : undefined"
-                           @click="toggle">
-                        <v-badge inline
-                                 color="green-lighten-5"
-                                 :content="all[4].n"
-                                 :class="{'empty': all[4].n==0}">
-                            По контрагентам
-                        </v-badge>
-                    </v-btn>
-                </v-slide-group-item>
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-gas-station-outline' : undefined"
-                           @click="toggle">
-                        <v-badge inline
-                                 color="green-lighten-5"
-                                 :content="all[5].n"
-                                 :class="{'empty': all[5].n==0}">
-                            ГСМ
-                        </v-badge>
-                    </v-btn>
-                </v-slide-group-item>
-                <v-slide-group-item v-slot="{ isSelected, toggle }">
-                    <v-btn variant="text" size="small"
-                           :color="isSelected ? 'primary' : undefined"
-                           :prepend-icon="isSelected ? 'mdi-account-credit-card-outline' : undefined"
-                           @click="toggle">
-                        <v-badge inline
-                                 color="green-lighten-5"
-                                 :content="all[6].n"
-                                 :class="{'empty': all[6].n==0}">
-                            Начисления
-                        </v-badge>
-                    </v-btn>
-                </v-slide-group-item>
-            </v-slide-group>
-        </v-toolbar>
         <div class="ar-chief__conte">
             <div class="pa-5" v-if="error">
                 <v-alert border="start"
@@ -152,12 +129,16 @@ export default {
         return {
             report: 0,
             _REP_COMPS,
-            error: null
+            error: null,
+            isMounted: false
         };
     },
     computed: {
         all(){
             return this._REP_COMPS;
+        },
+        activeTitle(){
+            return _REP_COMPS[this.report].title;
         },
         activeReport(){
             useHead({
@@ -167,40 +148,20 @@ export default {
         }
     },
     mounted(){
+        this.isMounted = true;
         this.$nextTick(()=>{
-            $(".v-main").css({height: "calc(100vh - 118px)"});
+            $(".v-main").css({height: "calc(100vh - 92px)"});
         });
     },
-    watch: {
-        report(val){
-            //reset error
+    methods: {
+        selReport(e){
             this.error = null;
+            this.report = e.at(0) || 0;
         }
     }
 }    
 </script>
 <style lang="scss">
-    .ar-chief{
-        & .v-toolbar{
-            z-index: 9;
-            .v-slide-group{
-                margin: 0 -8px;
-            }
-        }
-        background: #fff;
-        height: calc(100vh - 78px);
-        margin: -16px -16px 0 -16px;
-        position: relative;
-        &__conte{
-            height: 100%;
-            overflow-y: auto;
-            padding-top: 52px;
-            padding-bottom: 1rem;
-        }
-        & .v-badge.empty {
-            & .v-badge__badge{
-                display: none !important;
-            }
-        }
+    .ar-chief {
     }
 </style>
