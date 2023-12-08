@@ -8,6 +8,7 @@
             <v-tab :value="2">Закрытые</v-tab>
             <v-tab :value="3">Завершенные</v-tab>
         </v-tabs>
+        
     </teleport>
     <v-data-table-server density="compact"
                   class="ar-lorders"

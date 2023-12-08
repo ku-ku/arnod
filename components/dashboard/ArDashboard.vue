@@ -35,7 +35,7 @@
                                         color="primary">
                                     <div><b>{{ totals.vehicles.motodays.pc }}</b>%</div>
                                     <div class="text-muted">
-                                        %-выхода: {{ totals.vehicles.motodays.all }} / {{ totals.vehicles.motodays.idle }}
+                                        %-выхода на рейс
                                     </div>
                                 </v-chip>
                             </v-col>
@@ -90,7 +90,7 @@
                                         color="primary">
                                     <div><b>{{ format(totals.vehicles.norm_consumption, 1) }}</b>&nbsp;л/100км</div>
                                     <div class="text-muted">
-                                        ср.расход&nbsp;(расчетный:&nbsp;{{ totals.vehicles.avg_consumption }})
+                                        (расчетный:&nbsp;{{ totals.vehicles.avg_consumption }})
                                     </div>
                                 </v-chip>
                             </v-col>
@@ -138,12 +138,14 @@
                                  title="транспорт"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-gauge"
+                                 :to="{name: 'company-settings'}"
                                  title="нормативы"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-file-table-outline"
                                  title="справочники"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-account-multiple-outline"
+                                 :to="{name: 'company-users'}"
                                  title="пользователи"></v-list-item>
                 </v-list>
             </v-col>

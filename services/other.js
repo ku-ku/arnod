@@ -81,6 +81,14 @@ const _REFS = {
     vat_rates: {
         url: '/refs/vat_rates',
         columns: '*'
+    },
+    roles: {
+        url: '/rbac/roles',
+        columns: 'id,title'
+    },
+    carriers: {
+        url: '/carriers',
+        columns: 'id,title'
     }
 };
 
