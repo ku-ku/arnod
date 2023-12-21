@@ -135,6 +135,7 @@
                                  :to="{name: 'company-finance'}"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-truck-outline"
+                                 :to="{name: 'company-transport'}"
                                  title="транспорт"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-gauge"

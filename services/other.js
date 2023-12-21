@@ -89,6 +89,10 @@ const _REFS = {
     carriers: {
         url: '/carriers',
         columns: 'id,title'
+    },
+    trailers: {
+        url: '/trailers',
+        columns: '*'
     }
 };
 
