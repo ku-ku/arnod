@@ -51,6 +51,7 @@
     import ArTrailer from "./ArTrailer";
     
     const props = defineProps({search: String});
+    const $emit = defineEmits(["count"]);
     
     const hdrs = [
         {title: 'Рег.номер',    key: 'reg_number', sortable: false},
@@ -93,6 +94,7 @@
             if (res.success){
                 trailers.value = res.result.items;
                 pages.value.total = res.result.total;
+                $emit("count", res.result.total);
             }
         } catch(e){
             console.log('ERR (vehicles)', e);

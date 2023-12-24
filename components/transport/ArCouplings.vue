@@ -53,6 +53,7 @@
     import ArCoupling from "./ArCoupling";
     
     const props = defineProps({search: String});
+    const $emit = defineEmits(["count"]);
     
     const hdrs = [
         {title: 'ТС/прицеп', key: 'reg_number', sortable: false},
@@ -64,18 +65,31 @@
 
     const s = toRef(props, 'search');
     
-    const couplings= ref([]),
+    const allItems = ref([]),
           selected = ref([]),
-          dlg      = ref(null);
+          dlg      = ref(null),
+          at       = computed(()=> all.at);
+    
+    const couplings= computed(()=>{
+        if ( empty(s.value) ){
+            return allItems.value;
+        }
+        const re = new RegExp(`(${ s.value })+`, 'i');
+        return allItems.value.filter( a => {
+            return re.test(a.reg_number)
+                 ||re.test(a.drivers.map(d=>d.user.full_name).join("#"));
+        });
+    });
     
     const { pending, error } = useAsyncData('transport-couplings', async ()=>{
-        couplings.value = [];
+        allItems.value = [];
         
         try {
             const now = $moment();
-            const res = await $jet.api({
+            const opts = {
                 url: `/vehicles/schedule?start_date=${ now.format('YYYY-MM-DD') }&end_date=${ now.format('YYYY-MM-DD 23:59:59') }&is_active=true`
-            });
+            };
+            const res = await $jet.api(opts);
             if (res.success){
                 res.result.forEach( r => {
                     if (r.active_status){
@@ -92,7 +106,8 @@
                         r.active_status.at = at.format("DD.MM.YYYY HH:mm");
                     }
                 });
-                couplings.value = res.result;
+                allItems.value = res.result;
+                $emit("count", allItems.value.length);
             }
         } catch(e){
             console.log('ERR (vehicles)', e);
@@ -103,11 +118,10 @@
                     });
         }
     }, {
-        watch: [ s, all ]
+        watch: [ at ]
     });
     
     function oncoup(item){
-        console.log('dlg', dlg);
         dlg.value.open(item);
     };  //
     

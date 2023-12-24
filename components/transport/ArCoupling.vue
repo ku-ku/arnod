@@ -11,7 +11,7 @@
             <v-spacer />
             <v-btn append-icon="mdi-close"
                    flat
-                   v-on:click="show = false">
+                   v-on:click="close">
                        закрыть
             </v-btn>
         </v-toolbar>
@@ -139,11 +139,13 @@ export default {
         ArCoupOdo,
         ArCoupFuel        
     },
+    emits: ["success"],
     async setup(){
         const coupling = ref(null),
               show     = ref(false),
               tab      = ref(0),
-              pending  = ref(false);
+              pending  = ref(false),
+              dirty    = ref(false);
       
         const { error } = useAsyncData('transport-coupling', async ()=>{
             if (
@@ -154,7 +156,7 @@ export default {
             }
             
             pending.value = true;
-            
+            dirty.value = false;
             try {
                 let res = await $jet.api({url: `/vehicles/${ coupling.value.id }`});
                 if ( res.success ) {
@@ -164,7 +166,8 @@ export default {
                         coupling.value.trailer_at = phpdate2m(res.result.trailers[0].pivot.start_date).format('DD.MM.YYYY');
                     }
                     if (res.result.drivers?.length > 0){
-                        coupling.value.driver = res.result.drivers[0].user.full_name;
+                        coupling.value.driver_id = res.result.drivers[0].id;
+                        coupling.value.driver    = res.result.drivers[0].user.full_name;
                         coupling.value.driver_at = phpdate2m(res.result.drivers[0].pivot.start_date).format('DD.MM.YYYY');
                     }
                     if (res.result.odometers?.length > 0){
@@ -177,7 +180,9 @@ export default {
                     } else {
                         coupling.value.fuel = `всего: ${res.result.fuel_capacity}`;
                     }
-                    
+                    useSeoMeta({
+                        title: `${ coupling.value.reg_number || ''}-${ coupling.value.trailer?.reg_number || '' } ${ coupling.value.name }`
+                    });
                 }
             } catch(e){
                 console.log('ERR (coupling)', e);
@@ -208,6 +213,7 @@ export default {
             if (refresh){
                 refreshNuxtData('transport-coupling');
                 this.$refs["schedule"].refresh();
+                this.dirty = true;
                 return;
             }
             let day = {
@@ -224,11 +230,9 @@ export default {
             if (refresh){
                 refreshNuxtData('transport-coupling');
                 this.$refs["schedule"].refresh();
+                this.dirty = true;
                 return;
             }
-            
-            //editing
-            console.log('coupling', this.coupling);
             let day = {
                 day: $moment().startOf('day'),
                 vehicle_id: this.coupling.id,
@@ -242,6 +246,7 @@ export default {
             if (refresh){
                 this.coupling.odometer = refresh.distance;
                 this.coupling.odometer_at=phpdate2m(refresh.created_at).format('DD.MM.YYYY');
+                this.dirty = true;
                 return;
             }
 
@@ -258,6 +263,7 @@ export default {
             if (refresh){
                 this.coupling.fuel = `${refresh.absolute_remain} л. (${refresh.relative_remain})`;
                 this.coupling.fuel_at = phpdate2m(refresh.created_at).format('DD.MM.YYYY HH:mm');
+                this.dirty = true;
                 return;
             }
 
@@ -267,6 +273,13 @@ export default {
                 last: `${this.coupling.fuel||''} от ${this.coupling.fuel_at|| '-'}`
             };
             this.$refs["fuelDlg"].open(fuel);
+        },
+        
+        close(){
+            if (this.dirty){
+                this.$emit("success", this.coupling);
+            }
+            this.show = false;
         }
     }
 }    

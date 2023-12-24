@@ -53,6 +53,7 @@
     import ArDriver from "./ArDriver";
     
     const props = defineProps({search: String});
+    const $emit = defineEmits(["count"]);
     
     const hdrs = [
         {title: 'ФИО',    key: 'user.full_name', sortable: false},
@@ -61,10 +62,10 @@
         {title: ' ',            key: 'actions', sortable: false, align: "center", width: 108}
     ];
     const pages = ref({
-                            page: 1,
-                            perPage: 25,
-                            total: 0,
-                            sort: []
+                        page: 1,
+                        perPage: 25,
+                        total: 0,
+                        sort: []
                     }),
           s = toRef(props, 'search');
     
@@ -90,6 +91,7 @@
             if (res.success){
                 drivers.value = res.result.items;
                 pages.value.total = res.result.total;
+                $emit("count", res.result.total);
             }
         } catch(e){
             console.log('ERR (vehicles)', e);

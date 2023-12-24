@@ -18,6 +18,20 @@
                         <v-col cols="12" class="text-h6">
                             Параметры рейса
                         </v-col>
+                        <v-col cols="12" v-if="(orders.length > 0)">
+                            <v-autocomplete label="Заказ"
+                                            clearable
+                                            density="compact"
+                                            hide-details
+                                            name="order_id"
+                                            item-title="title"
+                                            item-value="id"
+                                            :items="orders"
+                                            :rules="[rules.empty]"
+                                            return-object
+                                            v-on:update:modelValue="onorder">
+                            </v-autocomplete>
+                        </v-col>
                         <v-col cols="12" sm="4">
                             <jet-input-date v-model="trip.start"
                                             type="date"
@@ -161,7 +175,7 @@ const _DEFS = {
     price: null,
     loaded: null,
     unloaded: null,
-    order_id: 0
+    order_id: null
 };
 
 const rules = {
@@ -180,9 +194,13 @@ export default {
               start= computed(()=>{
                   return (trip.value?.start) ? trip.value.start : new Date();
               }),
+              orders   = ref([]),
               vehicles = ref([]);
         
         useAsyncData('vehicles', async ()=>{
+            if (vehicles.value.length > 0){
+                return;
+            }
             try {
                 let res = await forscheduling(start.value);
                 res.forEach( r => {
@@ -198,6 +216,33 @@ export default {
         }, {
             watch: [start]
         });
+        
+        useAsyncData('orders', async ()=>{
+            if (orders.value.length > 0){
+                return true;
+            }
+            try {
+                let res = await $jet.api({
+                    url: '/organizations_order',
+                    params: {
+                        perPage: -1,
+                        filters: 'status:IN_EXECUTION'
+                    }
+                });
+                console.log('orders', res);
+                if (res.success){
+                    res.result.items.forEach( r => {
+                        r.title = `#${r.order.number} - ${ r.order.move_direction?.title } (${ r.order.cargo_name?.title || '-' })`;
+                    });
+                    orders.value = res.result.items;
+                }
+                return true;
+            }catch(e){
+                console.log('ERR(orders)', e);
+                return false;
+            }
+        });
+        
         
         const { data, pending, error } = useAsyncData('vehicle-trip', async ()=>{
             let _trip = {..._DEFS};
@@ -219,6 +264,7 @@ export default {
         return {
             trip,
             vehicles,
+            orders,
             pending,
             error
         };
@@ -261,18 +307,29 @@ export default {
         defs(q){
             switch(q){
                 case 'price':
-                    return '' + this.order?.price;
+                    return '' + this.order?.price || 0;
                 case 'distance':
-                    return this.order ? `${this.order.move_direction?.distance} км.` : null;
+                    return this.order ? `${this.order.move_direction?.distance} км.` : '';
                 case 'cargo_count':
-                    return this.order ? `доступно ${Number(this.order.cargo_units_count-this.order.distributed_cargo_count).toFixed(1)}` : null;
+                    return this.order ? `доступно ${Number(this.order.cargo_units_count-this.order.distributed_cargo_count).toFixed(1) || 0}` : '0';
             }
             return null;
         },
-        open(order, trip){
+        async open(order, trip){
             this.order = order;
+            if (!order){
+                refreshNuxtData('orders');
+            } else {
+                this.orders = [];
+            }
             this.trip = {id: trip?.id||0};
-            refreshNuxtData('vehicle-trip');
+            await refreshNuxtData('vehicle-trip');
+            if ( 
+                    ( trip )
+                  &&(!this.trip.id)
+                ){
+                Object.keys( trip ).forEach( k => { if ("id"!== k){ this.trip[k] = trip[k]; } });
+            }
             this.show = true;
             this.$nextTick(()=>{
                 $("input[name=start]").trigger("focus");
@@ -289,6 +346,15 @@ export default {
             } else {
                 this.trip.driver_id = null;
             }
+        },
+        onorder(e){
+            let order = e?.order;
+            if (order){
+                order.org_order_id = e.id;
+                order.distributed_cargo_count = e.distributed_cargo_count;
+                order.price = e.price;
+            } 
+            this.order = order;
         },
         async save(){
             let { valid } = await this.$refs["form"].validate();
