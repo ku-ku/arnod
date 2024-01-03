@@ -41,7 +41,8 @@
             <tr v-for="(w, n) in weeks"
                 :key="'week-' + n">
                 <td v-for="(d, m) in weeks[n]"
-                    :key="`day-${ n }-${ m }`">
+                    :key="`day-${ n }-${ m }`"
+                    v-bind:class="{ontrip: (d.orders?.id > 0)}">
                     <template v-if="d.s">
                         <div class="day">
                             {{ d.s }}
@@ -129,7 +130,6 @@
     
     
     useAsyncData('scheldule', async ()=>{
-        console.log('scheldule at',  coupling);
         pending.value = true;
         
         month.value = $m.month();
@@ -137,6 +137,8 @@
         weeks.value = [];
         schedule.value = null;
         let m = $moment([year.value, month.value, 1]);
+        
+        console.log('scheldule at',  m.year()*100 + m.month(), coupling);
         
         for (let w = 0; w < 5; w++ ){
             let days = [];
@@ -172,34 +174,45 @@
                 
                 //normalize dates for using
                 ['trailers', 'drivers', 'orders', 'status'].forEach( k => {
-                    (res[k]||[]).forEach( r => {
-                        let tmp = r.pivot || r;
-                        if ( !tmp?.start_date ){
+                    if ( !res[k] ){
+                        console.log('no key: ' + k);
+                        return;
+                    }
+                    
+                    res[k].forEach( r => {
+                        let tmp = (r.pivot) ? r.pivot : r;
+                        if ( !tmp || !tmp.start_date ){
                             return;
                         }
                         r.start = phpdate2m(tmp.start_date).startOf('day');
+                        r.end   = null;
                         if (tmp.end_date){
+                            if (tmp.end_date===tmp.start_date){
+                                return;
+                            }
                             r.end = phpdate2m(tmp.end_date);
                         } else if ('status'===k) {
                             r.end = $moment(r.start).add(1, 'day').add(-1, 'second');
                         }
+                        
                         weeks.value.forEach(w =>{
                             w.forEach( d => {
                                 if ( !d.day ){
                                     return;
                                 }
                                 if (
-                                        r.start.isSameOrBefore(d.day)
+                                        r.start.isSameOrBefore(d.day, 'day')
                                      && (
                                             !r.end
-                                          || r.end.isSameOrAfter(d.day)
+                                          || r.end.isSameOrAfter(d.day, 'day')
                                         )
                                 ){
                                     d.vehicle_id = coupling.value.id;
                                     d[k] = r;
                                     if (
                                             ("status"===k)
-                                          &&(r.start.isSame(r.end))
+                                         && r.end
+                                         && (r.start.isSame(r.end, 'second'))
                                        ){
                                             d[k] = null;
                                     }
@@ -349,6 +362,12 @@
                 }
                 & td{
                     border-left: 1px solid #ccc;
+                    &.ontrip{
+                        background-color: #FFFDE7;
+                    }
+                    & .v-btn{
+                        background-color: transparent;
+                    }
                     & .day{
                         font-weight: 600;
                         text-align: right;

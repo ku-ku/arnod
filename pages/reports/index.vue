@@ -141,7 +141,7 @@ export default {
             return _REP_COMPS[this.report].title;
         },
         activeReport(){
-            useHead({
+            useSeoMeta({
                 title: `${ profile.tenant?.title || ''} | ${_REP_COMPS[this.report]?.title || ''}`
             });
             return _REP_COMPS[this.report].comp;

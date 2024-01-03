@@ -111,17 +111,30 @@ export default {
             if (this.period.free){
                 return `${ $moment(this.period.start).format("DD.MM") } - ${ $moment(this.period.end).format("DD.MM") }`;
             }
-            return MONTHS[this.period.month].name;
+            let s = MONTHS[this.period.month].name;
+            if ( now.getFullYear() !== this.period.start.getFullYear() ){
+                s += ', ' + this.period.start.getFullYear();
+            }
+            return s;
         },
         month: {
             get(){
                 return this.period.month;
             },
             set(val){
+                let old = this.period.month,
+                    year= now.getFullYear();
+                if (
+                        ( 0 == old )
+                     && (11 == val)
+                ){
+                    year--;
+                }
+                console.log('month', old, val, year);
                 this.period.month = val;
-                this.period.free = false;
-                this.period.start = new Date(now.getFullYear(), val, 1);
-                this.period.end = $moment(this.period.start).add(1, 'month').add(-1, 'days').toDate();
+                this.period.start = new Date(year, val, 1);
+                this.period.end   = $moment(this.period.start).add(1, 'month').add(-1, 'days').toDate();
+                this.period.free  = false;
                 this.$emit('period', this.period);
             }
         }
