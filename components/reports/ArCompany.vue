@@ -296,13 +296,15 @@ export default {
                 chart.destroy();
                 chart = null;
             }
+            let res = true;
             try {
-                totals.value.load(all.period);
-                return true;
+                await totals.value.load(all.period);
             } catch(e){
+                res = false;
                 console.log('ERR (totals)', e);
                 emit('error', e);
             }
+            return res;
         });
         
         useAsyncData('company-expences', ()=>{

@@ -130,7 +130,6 @@ export default {
                 ){
                     year--;
                 }
-                console.log('month', old, val, year);
                 this.period.month = val;
                 this.period.start = new Date(year, val, 1);
                 this.period.end   = $moment(this.period.start).add(1, 'month').add(-1, 'days').toDate();
