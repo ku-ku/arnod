@@ -117,7 +117,7 @@
                 <v-list class="ar-nav">
                     <v-list-item append-icon="mdi-chevron-right"
                                  prepend-icon="mdi-face-agent"
-                                 title="заказы"
+                                 title="заявки"
                                  subtitle="коммерсант"
                                  :to="{name: 'company-orders'}"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
@@ -132,23 +132,28 @@
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-calculator-variant-outline"
                                  title="финансы"
-                                 :to="{name: 'company-finance'}"></v-list-item>
+                                 :to="{name: 'company-finance'}"
+                                 subtitle="распределение затрат по объектам учета"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-truck-outline"
                                  :to="{name: 'company-transport'}"
-                                 title="транспорт"></v-list-item>
+                                 title="транспорт"
+                                 subtitle="транспорт | прицепы | сцепки | водители"></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-gauge"
                                  :to="{name: 'company-settings'}"
-                                 title="нормативы"></v-list-item>
+                                 title="нормативы"
+                                 subtitle="нормартивы оплат | расход ГСМ | стоимость ГСМ..."></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-file-table-outline"
                                  :to="{name: 'company-refs'}"
-                                 title="справочники"></v-list-item>
+                                 title="справочники"
+                                 subtitle="типы груза | типы транспорта | ед.измерения..."></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-account-multiple-outline"
                                  :to="{name: 'company-users'}"
-                                 title="пользователи"></v-list-item>
+                                 title="пользователи"
+                                 subtitle="перевозчики | пользователи | заявки на регистрацию"></v-list-item>
                 </v-list>
             </v-col>
         </v-row>

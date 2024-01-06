@@ -20,6 +20,9 @@
                     </v-list-item>
                 </v-list>
             </v-menu>
+            <app-search-input v-on:search="s = $event" 
+                              hide-details
+                              label="поиск" />
         </div>
     </teleport>
     <teleport to="#ar-tb__prepend">
@@ -34,12 +37,12 @@
                   class="ar-settings"
                   fixed-header
                   disable-sort
-                  no-filter
                   hover
                   :headers="headers"
                   :items="items"
                   :items-per-page="25"
                   :loading="pending"
+                  :search="s"
                   single-select
                   no-data-text="..."
                   height="calc(100vh - 178px)"
@@ -63,15 +66,26 @@
     </v-data-table>
     <teleport to="body">
         <ar-refs-dlg ref="dlg" 
-                         v-on:success="reload" />
+                     v-on:success="reload" />
+        <ar-map-point ref="dlgPoint" 
+                      v-on:success="reload" />
     </teleport>
 </template>
 
 <script setup>
     import moment from "moment";
     import { ref, computed, onMounted, watch} from "vue";
-    import { phpdate2m } from "app-ext/utils";
+    import { phpdate2m, empty } from "app-ext/utils";
     import ArRefsDlg from "~/components/refs/ArRefsDlg";
+    import ArMapPoint from "~/components/refs/ArMapPoint";
+    import AppSearchInput from "app-ext/components/AppSearchInput";
+
+    const items    = ref([]),
+          selected = ref([]),
+          headers  = ref([]),
+          dlg      = ref(null),
+          dlgPoint = ref(null),
+          s        = ref(null);
 
     const _KNOWN_COLUMNS = [
         {key: 'title',                   title: 'Наименование',            align: 'start',  type: 'string'},
@@ -84,9 +98,9 @@
         {key: 'can_changed_by_driver',   title: 'Меняет водитель',         align: 'center', type: 'boolean', value: item => (item.can_changed_by_driver) ? 'Да' : 'Нет'},
         {key: 'can_changed_by_mechanic', title: 'Меняет механик',          align: 'center', type: 'boolean', value: item => (item.can_changed_by_mechanic) ? 'Да' : 'Нет'},
         {key: 'is_vehicle_active',       title: 'Блокирует ТС',            align: 'center', type: 'boolean', value: item => (item.is_vehicle_active) ? 'Да' : 'Нет'},
-        
+        {key: 'comment',    title: 'Примечание',     align: 'start',type: 'string'},
         {key: 'created_at', title: 'Дата создания',  align: 'end', type: 'date', value: item => moment(item.created_at).format('DD.MM.YYYY')},
-        {key: 'updated_at', title: 'Дата изменения', align: 'end', type: 'date', value: item => moment(item.updated_at).format('DD.MM.YYYY')},
+        {key: 'updated_at', title: 'Дата изменения', align: 'end', type: 'date', value: item => moment(item.updated_at).format('DD.MM.YYYY')}
         //{key: 'deleted_at', title: 'Дата удаления',  align: 'end',   type: 'date'},
     ];
 
@@ -102,10 +116,19 @@
             {id: 7, title: "Метод погрузки",          url: '/refs/method_of_loading',      val: 'value'},
             {id: 8, title: "Грузоподъемность ТС",     url: '/refs/vehicle_load_capacity',  val: 'value'},
             {id: 9, title: "Статусы ТС",              url: '/refs/vehicle_order_statuses', val: 'value'},
+            {id: 10,title: "Пункты погрузки",         url: '/loading_points', onitem: item => {
+                    dlgPoint.value.open(item.id, true);
+            }},
+            {id: 11,title: "Пункты выгрузки",         url: '/unloading_points', onitem: item => {
+                    dlgPoint.value.open(item.id, false);
+            }}
         ],
         active: ref(0),
         set: n => {
-            _REFS.active.value = n;
+                _REFS.active.value = n;
+                useSeoMeta({
+                    title: `${ _REFS.items[n].title } | справочники`
+                });
                 refreshNuxtData('company-refs');
             }
     };
@@ -117,11 +140,6 @@
         isMounted.value = true;
     });
 
-    const items = ref([]),
-          selected = ref([]),
-          headers = ref([]),
-          dlg   = ref(null);
-
     function onclickrow(e, { item }){
         selected.value = [ item ];
         $('.ar-settings table tr.v-data-table__selected').removeClass('v-data-table__selected');
@@ -130,6 +148,9 @@
 
     function onitem(item){
         var item = Object.assign( item||{id: -1}, {cols: headers.value, attrs: _REFS.items.at(_REFS.active.value)});
+        if (item.attrs.onitem){
+            return item.attrs.onitem(item);
+        }
         dlg.value.open( item );
     };  //onitem
     
@@ -181,7 +202,7 @@
             if (res.success){
                 const now = $moment();
                 items.value = res.result.items;
-                headers.value = _KNOWN_COLUMNS.filter((c) => Object.keys(res.result.items[0]).indexOf(c.key) > 0);
+                headers.value = _KNOWN_COLUMNS.filter( c => Object.keys(res.result.items[0]).indexOf(c.key) > 0);
                 headers.value.push({title: '...', key: 'actions', sortable: false, align: 'center', width: "5rem"});
             }
         } catch(e){
@@ -192,4 +213,8 @@
                     });
         }
     });
+    
+    function reload(){
+        refreshNuxtData('company-refs');
+    };
 </script>

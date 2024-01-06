@@ -18,6 +18,7 @@
 <script>
 import 'ol/ol.css';
 import {Map, View} from 'ol';
+import Collection from 'ol/Collection.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
 import {OSM, Vector as VectorSource} from 'ol/source';
 import LineString from 'ol/geom/LineString';
@@ -25,14 +26,21 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import {Circle as CircleStyle, Fill, Stroke, Style, Icon, Text, RegularShape} from 'ol/style';
 import * as olExtent from 'ol/extent';
+import Translate from 'ol/interaction/Translate.js';
 import { geo } from "app-ext/composables/geo";
 import * as turf from '@turf/turf';
 
 
+
+const _DEF_COORDS = [
+    38.977, 45.035
+];
+
 const _MAP_ICONS = {
         STARTING:'/map-images/map-a.png',
         ENDING:  '/map-images/map-b.png',
-        TRUCK:   '/map-images/truck.png'
+        TRUCK:   '/map-images/truck.png',
+        POINT:   '/map-images/point.png'
 };
 
 
@@ -92,6 +100,18 @@ const _truckStyle = feature => {
     return undefined;
 };
 
+const _centerStyle = feature => {
+    return new Style({
+                    geometry: new Point(feature.getGeometry().getCoordinates()),
+                    image: new Icon({
+                        src: _MAP_ICONS.POINT,
+                        scale: [0.3, 0.3],
+                        anchorOrigin: 'bottom-left',
+                        anchor: [0.5, 0],
+                        rotateWithView: true
+                    })
+                })    
+};  //_centerStyle
 
 export default {
     name: "ArMap",
@@ -100,9 +120,24 @@ export default {
             type: Object,
             required: true,
             default: null
+        },
+        center: {
+            type: Object,
+            required: false,
+            default: null
+        },
+        showCenter: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        moveCenter: {
+            type: Boolean,
+            required: false,
+            default: false
         }
     },
-    emits: ['distance'],
+    emits: ['distance', 'coords', 'address'],
     data(){
         return {
             map: null,
@@ -111,7 +146,6 @@ export default {
     },
     mounted(){
         const config = useRuntimeConfig();
-        console.log('config', config);
         if (config.app.baseURL.length > 1){
             Object.keys(_MAP_ICONS).forEach( async k => {
                 try {
@@ -137,8 +171,10 @@ export default {
     },
     methods: {
         initMap(){
+            const target = $(this.$el).find("#map").get(0);
+            
             const map = new Map({
-                target: $('#map').get(0),
+                target,
                 layers: [
                   new TileLayer({
                     source: new OSM()
@@ -147,7 +183,7 @@ export default {
                 controls: [],
                 view: new View({
                     projection: 'EPSG:4326',
-                    center: [39, 45],
+                    center: this.center || _DEF_COORDS,
                     zoom: 9,
                     enableRotation: false,
                     constrainResolution: true
@@ -161,6 +197,10 @@ export default {
             this.map = map;
             
             this.drawRoute();
+            
+            if (this.showCenter){
+                this.drawCenter();
+            }
         },
         _routeStyle(feature){
             const props = feature.getProperties();
@@ -185,7 +225,7 @@ export default {
                     layer = l;
                 }
             });
-            if ( !layer ){
+            if ((this.map) && ( !layer )){
                 layer = new VectorLayer();
                 layer.set('name', name);
                 this.map.addLayer(layer);
@@ -243,6 +283,47 @@ export default {
                 }, 300);
             }
         },   //drawRoute
+        drawCenter(zoom = true){
+            const center = (Array.isArray(this.center) && this.center.at(0)) ? this.center : _DEF_COORDS;
+            console.log('center', this.center, center);
+            let layer = this._getLayer("center-layer");
+            if ( !layer ){
+                return false;
+            }
+            layer.setStyle( _centerStyle );
+            
+            let marker, source = layer.getSource();
+            if ( !source ){
+                source = new VectorSource();
+                layer.setSource(source);
+                marker = new Feature({   
+                                    geometry: new Point(center)
+                        });
+                marker.setId("map-center-marker");
+                source.addFeature(marker);
+                if ( this.moveCenter ){
+                    let translate = new Translate({
+                        features: new Collection([marker])
+                    });
+                    translate.on('translateend', e => {
+                        this.$emit("coords", e.coordinate);
+                        this.getaddr(e.coordinate);
+                    });
+                    this.map.addInteraction(translate);
+                }
+            } else {
+                marker = source.getFeatureById("map-center-marker");
+                marker.getGeometry().setCoordinates(center);
+            }
+            
+            const view = this.map.getView();
+            if (view){
+                view.setCenter(center);
+                if (zoom){
+                    view.setZoom(13);
+                }
+            }
+        },  //drawCenter
         gomap(){
             let point;
             if (!this.ab){
@@ -273,7 +354,26 @@ export default {
                     });
                 }
             }
-        }   //gomap
+        },   //gomap
+        getaddr(ll){
+            if ( Array.isArray(ll) ) {
+                $.getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&lon=${ ll.at(0) }&lat=${ ll.at(1) }&zoom=18&addressdetails=1`)
+                        .then(res => {
+                            console.log('address', res);
+                            this.$emit('address', res.display_name);
+                        })
+                        .catch( e => {
+                            console.log('ERR (addr)', e);
+                        });
+            }
+        }   //addr
+    },
+    watch: {
+        center(val){
+            if ( Array.isArray(val) ){
+                setTimeout(()=>{this.drawCenter(false);}, 555);
+            }
+        }
     }
 };
 </script>
