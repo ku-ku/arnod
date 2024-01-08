@@ -1,4 +1,8 @@
 <template>
+    <teleport to="body">
+        <ar-map-point ref="dlgPoint" 
+                      v-on:success="reloadPoints" />
+    </teleport>
     <v-dialog v-model="show"
               min-height="480"
               scrollable
@@ -19,7 +23,7 @@
         <v-card rounded="0" class="pa-0" v-if="route">
             <v-card-text>
                 <v-row>
-                    <v-col cols="12" sm="3">
+                    <v-col cols="12" sm="4">
                         <div class="mb-3">
                             <v-text-field label="Наименование" 
                                           v-model="route.title"
@@ -34,6 +38,13 @@
                                             item-value="id"
                                             :items="loads"
                                             v-on:update:modelValue="reroute">
+                                <template v-slot:append>
+                                    <v-btn size="small"
+                                           flat
+                                           rounded="0"
+                                           icon="mdi-dots-vertical"
+                                           v-on:click="openPoint(true)"></v-btn>
+                                </template>
                             </v-autocomplete>
                         </div>    
                         <div class="mb-5">
@@ -45,6 +56,13 @@
                                             item-value="id"
                                             :items="unloads"
                                             v-on:update:modelValue="reroute">
+                                <template v-slot:append>
+                                    <v-btn size="small"
+                                           flat
+                                           rounded="0"
+                                           icon="mdi-dots-vertical"
+                                           v-on:click="openPoint(false)"></v-btn>
+                                </template>
                             </v-autocomplete>
                         </div>    
                         <div class="mb-5">
@@ -60,7 +78,7 @@
                             перестроить трассу маршрута
                         </v-btn>
                     </v-col>
-                    <v-col cols="12" sm="9" style="min-height: 480px;">
+                    <v-col cols="12" sm="8" style="min-height: 480px;">
                         <ar-map :route="route.route" 
                                 ref="map" />
                     </v-col>
@@ -76,7 +94,7 @@
                 </v-btn>
                 <v-btn variant="elevated"
                        size="small"
-                       :color="(1==order?.is_priority) ? 'indigo' : 'primary'"
+                       color="primary"
                        :loading="pending"
                        append-icon="mdi-send"
                        v-on:click="save">
@@ -89,17 +107,20 @@
 <script setup>
     import { ref, nextTick, defineEmits } from "vue";
     import ArMap from "./ArMap";
+    import ArMapPoint from "./refs/ArMapPoint";
     import { refs } from "~/services/other";
     import * as turf from '@turf/turf';
+    
+    const emit = defineEmits(["success"]);
     
     const show   = ref(false),
           route  = ref(null),
           map    = ref(null),
           loads  = ref([]),
-          unloads= ref([]);
-    const emit = defineEmits(["success"]);
-    
-    const { pending } = useAsyncData('refs-loads', async ()=>{    
+          unloads= ref([]),
+          dlgPoint=ref(null);
+  
+    const { pending } = useAsyncData('route-loads', async ()=>{    
         try {
             if (loads.value.length < 1){
                 loads.value = await refs('loading_points');
@@ -117,11 +138,8 @@
     
     const open = r => {
         var r = r || {id: 0, loading_points_id: null, end: null, title: null};
-        route.value = r;
         show.value  = true;
-        if ( r.id > 0 ){
-            nextTick(map.value.drawRoute);
-        }
+        route.value = r;
     };
     
     const reroute = ()=>{
@@ -145,7 +163,7 @@
         }
         pending.value = true;
         $.ajax({
-            url: `https://router.project-osrm.org/route/v1/route/${ start.lon },${ start.lat };${ end.lon },${ end.lat }?overview=full&geometries=geojson`,
+            url: `https://router.project-osrm.org/route/v1/truck/${ start.lon },${ start.lat };${ end.lon },${ end.lat }?overview=full&geometries=geojson`,
             timeout: 30000,
             cors: true
         }).then(res=>{
@@ -191,13 +209,32 @@
             } catch(e) {
                 console.log('ERR (save)', e);
                 $jet.msg({text: `Ошибка сохранения маршрута:<br />${ e.message }<br />${ $jet.api.$errm }`, color: 'warning'});
+            } finally {
+                pending.value = false;
             }
+            
         } else {
             $jet.msg({text: 'Не все поля заполнены', color: 'warning'});
         }
     };  //save
     
     defineExpose({ open });
+    
+    function openPoint(load){
+        let id = load ? route.value.loading_points_id : route.value.unloading_points_id;
+        dlgPoint.value.open(id, load);
+    };  //openPoint
+    
+    async function reloadPoints(id){
+        const load = dlgPoint.value.loadType;
+        const a = ( load ) ? loads : unloads;
+        a.value = [];
+        await refreshNuxtData("route-loads");
+        route.value[load ? "loading_points_id" : "unloading_points_id"] = null;
+        setTimeout(()=>{
+            route.value[load ? "loading_points_id" : "unloading_points_id"] = id;
+        }, 100);
+    };  //reload
     
 </script>
 <script>

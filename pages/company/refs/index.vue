@@ -69,6 +69,8 @@
                      v-on:success="reload" />
         <ar-map-point ref="dlgPoint" 
                       v-on:success="reload" />
+        <ar-route ref="dlgRoute"
+                  v-on:success="reload" />
     </teleport>
 </template>
 
@@ -78,14 +80,24 @@
     import { phpdate2m, empty } from "app-ext/utils";
     import ArRefsDlg from "~/components/refs/ArRefsDlg";
     import ArMapPoint from "~/components/refs/ArMapPoint";
+    import ArRoute from "~/components/ArRoute";
     import AppSearchInput from "app-ext/components/AppSearchInput";
+    import { all } from "~/composables/data";
+
+    const isMounted = ref(false);
+    
+    onMounted(()=>{
+        isMounted.value = true;
+    });
 
     const items    = ref([]),
           selected = ref([]),
           headers  = ref([]),
           dlg      = ref(null),
           dlgPoint = ref(null),
-          s        = ref(null);
+          dlgRoute = ref(null),
+          s        = ref(null),
+          at       = computed(()=>{ return all.at; });
 
     const _KNOWN_COLUMNS = [
         {key: 'title',                   title: 'Наименование',            align: 'start',  type: 'string'},
@@ -98,7 +110,8 @@
         {key: 'can_changed_by_driver',   title: 'Меняет водитель',         align: 'center', type: 'boolean', value: item => (item.can_changed_by_driver) ? 'Да' : 'Нет'},
         {key: 'can_changed_by_mechanic', title: 'Меняет механик',          align: 'center', type: 'boolean', value: item => (item.can_changed_by_mechanic) ? 'Да' : 'Нет'},
         {key: 'is_vehicle_active',       title: 'Блокирует ТС',            align: 'center', type: 'boolean', value: item => (item.is_vehicle_active) ? 'Да' : 'Нет'},
-        {key: 'comment',    title: 'Примечание',     align: 'start',type: 'string'},
+        {key: 'comment',                 title: 'Примечание',     align: 'start',type: 'string'},
+        {key: 'distance',                title: 'Расстояние,км',  align: 'end',type: 'integer'},
         {key: 'created_at', title: 'Дата создания',  align: 'end', type: 'date', value: item => moment(item.created_at).format('DD.MM.YYYY')},
         {key: 'updated_at', title: 'Дата изменения', align: 'end', type: 'date', value: item => moment(item.updated_at).format('DD.MM.YYYY')}
         //{key: 'deleted_at', title: 'Дата удаления',  align: 'end',   type: 'date'},
@@ -121,6 +134,9 @@
             }},
             {id: 11,title: "Пункты выгрузки",         url: '/unloading_points', onitem: item => {
                     dlgPoint.value.open(item.id, false);
+            }},
+            {id: 12, title: "Маршруты",               url: 'refs/move_directions', val: 'distance', onitem: item => {
+                    dlgRoute.value.open(item);
             }}
         ],
         active: ref(0),
@@ -133,12 +149,6 @@
             }
     };
     _REFS.set(0);
-
-    const isMounted = ref(false);
-    
-    onMounted(()=>{
-        isMounted.value = true;
-    });
 
     function onclickrow(e, { item }){
         selected.value = [ item ];
@@ -202,16 +212,23 @@
             if (res.success){
                 const now = $moment();
                 items.value = res.result.items;
-                headers.value = _KNOWN_COLUMNS.filter( c => Object.keys(res.result.items[0]).indexOf(c.key) > 0);
-                headers.value.push({title: '...', key: 'actions', sortable: false, align: 'center', width: "5rem"});
+                let item = res.result.items.at(0),
+                  _headers = [];
+                if (item){
+                    _headers = _KNOWN_COLUMNS.filter( c => Object.keys(item).indexOf(c.key) > 0);
+                }
+                _headers.push({title: '...', key: 'actions', sortable: false, align: 'center', width: "5rem"});
+                headers.value = _headers;
             }
         } catch(e){
             console.log('ERR (refs)', e);
             $jet.msg({
                         text:`Ошибка получения данных.<br /><small>Информация для техподдержки: ${e.message} ${$jet.api.$errm}`,
-                        type: 'warning'
+                        color: 'warning'
                     });
         }
+    }, {
+        watch: [at]
     });
     
     function reload(){

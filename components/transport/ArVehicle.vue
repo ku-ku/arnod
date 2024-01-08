@@ -138,7 +138,10 @@
         try {
             const opts = {
                 url: `/vehicles/${ vehicle.value.id }`,
-                method: 'GET'
+                method: 'GET',
+                params: {
+                    only: "1"
+                }
             };
             let res = await $jet.api(opts);
             if (res.success){

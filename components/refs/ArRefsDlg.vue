@@ -1,6 +1,3 @@
-
-import type { title } from 'process';
-
 <template>
     <v-dialog max-width="640"
               min-height="320"
@@ -24,22 +21,23 @@ import type { title } from 'process';
                     :loading="pending"
                     class="ar-rq">
                 <v-card-text class="pb-5">
-                    <v-row dense v-for="(col, i) in item.cols" :key="i">
+                    <v-row dense v-for="(col, i) in item.cols.filter( c => !/(\_at)+$/.test(c.key) )" :key="i">
                         <v-col cols="12">
                             <jet-input-date v-if="col.type=='date'" :label="col.title"
                                 v-model="item[col.key]"
                                 type="date"
                                 :name="col.key"
                                 required />
-                            <jet-input-string v-if="col.type=='string'" :label="col.title"
+                            <jet-input-string v-else-if="col.type=='string'" :label="col.title"
+                                v-model="item[col.key]"
+                                :name="col.key"
+                                type="text"
+                                required />
+                            <jet-input-number v-else-if="col.type=='integer'" :label="col.title"
                                 v-model="item[col.key]"
                                 :name="col.key"
                                 required />
-                            <jet-input-number v-if="col.type=='integer'" :label="col.title"
-                                v-model="item[col.key]"
-                                :name="col.key"
-                                required />
-                            <v-checkbox v-if="col.type=='boolean'" color="primary" :label="col.title"
+                            <v-checkbox v-else-if="col.type=='boolean'" color="primary" :label="col.title"
                                 v-model="item[col.key]"
                                 hide-details
                                 :name="col.key" />
@@ -61,26 +59,47 @@ import type { title } from 'process';
         </v-form>
     </v-dialog>
 </template>
-<script setup>
-    import { phpdate2m } from "app-ext/utils";
-    
-    import JetInputDate from "app-ext/components/editors/JetInputDate";
-    import JetInputNumber from "app-ext/components/editors/JetInputNumber";
-    import JetInputString from "app-ext/components/editors/JetInputString";
+<script>
+import { phpdate2m } from "app-ext/utils";
 
-    const $emit = defineEmits(['success']);
-    const show = ref(false);
-    const item = ref({id: -1});
-    const form = ref(null);
-    
-    defineExpose({
-        open: _item => {
-            console.log('opening', _item);
-            item.value = {..._item};
-            show.value = true;
+import JetInputDate from "app-ext/components/editors/JetInputDate";
+import JetInputNumber from "app-ext/components/editors/JetInputNumber";
+import JetInputString from "app-ext/components/editors/JetInputString";
+
+export default {
+    name: 'ArRefsDlg',
+    components: {
+        JetInputDate,
+        JetInputNumber,
+        JetInputString
+    },
+    emits: ['success'],
+    async setup(){
+        const { pending, error } = useAsyncData('company-settings-item', async ()=>{
+            //TODO:
+        });
+        return {
+            pending
+        };
+    },
+    data(){
+        return {
+            show: false,
+            item: {id: -1},
+        };
+    },
+    methods: {
+        open(item){
+            console.log('opening', item);
+            this.item = {...item};
+            this.show = true;
             refreshNuxtData('company-settings-item');
+        },
+        save(){
+            
         }
-    });
+    }
+};
     /*
     const { pending, error } = useAsyncData('company-settings-item', async ()=>{
         if ( !show.value ){

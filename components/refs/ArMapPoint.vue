@@ -83,7 +83,7 @@
     </v-dialog>
 </template>
 <script>
-import { computed } from "vue";
+import { computed, defineExpose } from "vue";
 import { empty } from "app-ext/utils";
 import JetInputString from "app-ext/components/editors/JetInputString";
 import ArMap from "~/components/ArMap";
@@ -150,6 +150,11 @@ export default {
             }
         }));
         
+        defineExpose({
+            loadType,
+            coords
+        });
+        
         return {
             show,
             loadType,
@@ -193,8 +198,7 @@ export default {
                 let res = await $jet.api(opts);
                 if (res.success){
                     this.pointId = res.result.id;
-                    await refreshNuxtData("ar-map-point");
-                    this.$emit("success", this.item);
+                    this.$emit("success", this.pointId);
                     this.show = false;
                 }
             } catch(e){

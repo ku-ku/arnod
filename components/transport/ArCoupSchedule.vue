@@ -166,7 +166,8 @@
                 params: {
                     include: "*",
                     start_date: $m.startOf('month').format('YYYY-MM-DD 00:00:00'),
-                    end_date:   end_month.format('YYYY-MM-DD 23:59:59')
+                    end_date:   end_month.format('YYYY-MM-DD 23:59:59'),
+                    noactive:   1
                 }
             });
             if ( res.success ){

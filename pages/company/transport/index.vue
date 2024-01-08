@@ -52,14 +52,17 @@
     
     const _NAVS = {
         items: [
-            {id: 0, title: "Сцепки",     icon: "mdi-dump-truck",    comp: ArCouplings, n: 0},
-            {id: 1, title: "Транспорт",  icon: "mdi-truck-flatbed", comp: ArVehicles, n: 0},
-            {id: 2, title: "Прицепы",    icon: "mdi-truck-trailer", comp: ArTrailers, n: 0},
+            {id: 0, title: "Транспорт",  icon: "mdi-truck-flatbed", comp: ArVehicles, n: 0},
+            {id: 1, title: "Прицепы",    icon: "mdi-truck-trailer", comp: ArTrailers, n: 0},
+            {id: 2, title: "Сцепки",     icon: "mdi-dump-truck",    comp: ArCouplings, n: 0},
             {id: 3, title: "Водители",   icon: "mdi-account-multiple", comp: ArDrivers, n: 0}
         ],
         active: ref(0),
         set: n => {
                 _NAVS.active.value = n;
+                useSeoMeta({
+                    title: _NAVS.items[n].title
+                });
                 refreshNuxtData('company-settings');
             }
     };

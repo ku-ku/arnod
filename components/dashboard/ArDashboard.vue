@@ -148,7 +148,7 @@
                                  prepend-icon="mdi-file-table-outline"
                                  :to="{name: 'company-refs'}"
                                  title="справочники"
-                                 subtitle="типы груза | типы транспорта | ед.измерения..."></v-list-item>
+                                 subtitle="типы груза | типы транспорта | маршруты | точки..."></v-list-item>
                     <v-list-item append-icon="mdi-chevron-right" 
                                  prepend-icon="mdi-account-multiple-outline"
                                  :to="{name: 'company-users'}"

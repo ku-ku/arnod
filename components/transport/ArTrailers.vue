@@ -82,7 +82,8 @@
             const params = {
                     page: pages.value.page,
                     perPage: pages.value.perPage,
-                    include: '*'
+                    include: '*',
+                    only: "1"
                 };
             if ( !empty(s.value) ){
                 params.filters = `reg_number:${ s.value }`;

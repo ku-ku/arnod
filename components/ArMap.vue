@@ -156,9 +156,7 @@ export default {
                 }
             });
         }
-        this.$nextTick(()=>{ 
-            this.initMap(); 
-        });
+        this.$nextTick(this.initMap);
     },
     computed: {
         coords(){
@@ -237,28 +235,27 @@ export default {
                 console.log('map: no coords for route', this.route);
                 return;
             }
+            console.log('map: route', this.route);
+            
             let line = this._getLayer("route-layer");
-            let source = line.getSource();
-            if ( source ){
-                source.clear();
-            } else {
-                source = new VectorSource();
-                line.setSource(source);
-            }
+            line.setStyle( _routeStyle );
+            let source = new VectorSource();
             source.addFeature(
                     new Feature({   
                                 geometry: new LineString(this.coords),
                                 color: "#8BC34A"
                     })
             );
-            line.setStyle( _routeStyle );
-                    
+            line.setSource(source);
             const bounds = source.getExtent();
             if ( !olExtent.isEmpty(bounds) ){
                 const view = this.map.getView();
                 view.setCenter(olExtent.getCenter(bounds));
                 view.fit(bounds, {padding: [20, 20, 20, 20]});
+            } else {
+                console.log('empty extent from source', source);
             }
+            this.map.updateSize();
             
             if ( geo.coords.timestamp > 0 ){
                 let truck = this._getLayer("truck-layer");
@@ -371,7 +368,12 @@ export default {
     watch: {
         center(val){
             if ( Array.isArray(val) ){
-                setTimeout(()=>{this.drawCenter(false);}, 555);
+                setTimeout(()=>{ this.drawCenter(false); }, 555);
+            }
+        },
+        route(val){
+            if (val){
+                setTimeout(this.drawRoute, 555);
             }
         }
     }
