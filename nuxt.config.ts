@@ -1,8 +1,10 @@
 const isDev = (process.env.NODE_ENV === 'development');
 //const _HOST = 'https://api.arnod.ru';
-const _HOST = isDev ? 'http://localhost:8000' : 'https://api.arnod.ru';
+//const _HOST = isDev ? 'http://localhost:8000' : 'https://api.arnod.ru';
 //const _HOST = isDev ? 'http://192.168.61.244' : 'http://tra-co.kih.ru';
 //const _HOST = isDev ? 'http://192.168.61.244' : 'https://api.arnod.ru';
+
+const _HOST = isDev ? 'http://85.175.5.166:55347' : 'http://this:55347';
 
 export default defineNuxtConfig({
     ssr: false,

@@ -135,7 +135,7 @@
             {id: 11,title: "Пункты выгрузки",         url: '/unloading_points', onitem: item => {
                     dlgPoint.value.open(item.id, false);
             }},
-            {id: 12, title: "Маршруты",               url: 'refs/move_directions', val: 'distance', onitem: item => {
+            {id: 12, title: "Маршруты",               url: '/refs/move_directions', val: 'distance', onitem: item => {
                     dlgRoute.value.open(item);
             }}
         ],
